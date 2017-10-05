@@ -20,224 +20,365 @@
 #include <fstream>
 #include "MainWindow.h"
 #include "Game.h"
+
 using namespace std;
 
-struct Tpoint
-{
-	Tpoint(int _x = 0, int _y = 0)
-		: x(_x), y(_y) {}
-	int x;
-	int y;
+//#define GMIN numeric_limits<int>::min()
+//#define GMAX numeric_limits<int>::max()
 
-	friend ostream & operator << (ostream & os, const Tpoint & src)
-	{
-		return os << src.x << ", " << src.y;
-	}
-};
+//#define GMIN -100
+//#define GMAX 100
 
-double distance(const Tpoint & a, const Tpoint & b)
+#define GMIN 10
+#define GMAX (Graphics::ScreenHeight - 10)
+
+double my_distance(const Tpoint & a, const Tpoint & b)
 {
-	return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y));
+	return sqrt((double)(a.m_x - b.m_x) * (double)(a.m_x - b.m_x)
+		      + (double)(a.m_y - b.m_y) * (double)(a.m_y - b.m_y));
+}
+int sq_distance(const Tpoint & a, const Tpoint & b)
+{
+	return (a.m_x - b.m_x) * (a.m_x - b.m_x)
+		 + (a.m_y - b.m_y) * (a.m_y - b.m_y);
 }
 
-class node
+Tpoint get_closest_p(const Trect & rect, const Tpoint & p)
+{
+	/* 1 | 2 | 3
+	  ---+---+---
+	   4 | 5 | 6
+	  ---+---+---
+	   7 | 8 | 9 */
+
+	if (p.m_x > rect.m_upleft.m_x)
+	{
+		if (p.m_y > rect.m_upleft.m_y)
+		{	// no.: 1
+			return Tpoint(rect.m_upleft);
+		}
+		else if (p.m_y < rect.m_downright.m_y)
+		{	// no.: 7
+			return Tpoint(rect.m_upleft.m_x, rect.m_downright.m_y);
+		}
+		else
+		{	// no.: 4
+			return Tpoint(rect.m_upleft.m_x, p.m_y);
+		}
+	}
+	else if (p.m_x < rect.m_downright.m_x)
+	{
+		if (p.m_y > rect.m_upleft.m_y)
+		{	// no.: 3
+			return Tpoint(rect.m_downright.m_x, rect.m_upleft.m_y);
+		}
+		else if (p.m_y < rect.m_downright.m_y)
+		{	// no.: 9
+			return Tpoint(rect.m_downright);
+		}
+		else
+		{	// no.: 6
+			return Tpoint(rect.m_downright.m_x, p.m_y);
+		}
+	}
+	else
+	{
+		if (p.m_y > rect.m_upleft.m_y)
+		{	// no.: 2
+			return Tpoint(p.m_x, rect.m_upleft.m_y);
+		}
+		else if (p.m_y < rect.m_downright.m_y)
+		{	// no.: 8
+			return Tpoint(p.m_x, rect.m_downright.m_y);
+		}
+		else
+		{	// no.: 5
+			return p;
+		}
+	}
+}
+
+class odd_node;
+class even_node
 {
 public:
-	node(int x = 0, int y = 0, int data = 0)
-		: m_x(x),
-		m_y(y),
-		m_data(data),
-		m_upleft(NULL),
-		m_upright(NULL),
-		m_downleft(NULL),
-		m_downright(NULL)
+	even_node(const Tpoint & p = {})
+		: m_p(p), m_top(NULL), m_bot(NULL)
 	{}
-	~node(void)
-	{
-		delete m_upleft; delete m_upright; delete m_downleft; delete m_downright;
-	}
+	~even_node(void);
+	void insert(const Tpoint & p, const Trect & lrect, const Trect & rrect);
+	Tpoint find_closest_point(const Tpoint & p, Tpoint & closest, int & best_dist) const;
+	//friend ostream & operator << (ostream & os, const even_node & src);
 
-	void insert(int x, int y, int data)
-	{
-		if (m_x == x && m_y == y)
-			return;
-
-		if (m_x < x && m_y < y)
-		{
-			// going down right
-			if (m_downright == NULL)
-				m_downright = new node(x, y, data);
-			else
-				m_downright->insert(x, y, data);
-		}
-		else if (m_x < x && m_y >= y)
-		{
-			// going down left
-			if (m_downleft == NULL)
-				m_downleft = new node(x, y, data);
-			else
-				m_downleft->insert(x, y, data);
-		}
-		else if (m_x >= x && m_y < y)
-		{
-			// going up right
-			if (m_upright == NULL)
-				m_upright = new node(x, y, data);
-			else
-				m_upright->insert(x, y, data);
-		}
-		else// if(m_x > x && m_y > y)
-		{
-			// going up left
-			if (m_upleft == NULL)
-				m_upleft = new node(x, y, data);
-			else
-				m_upleft->insert(x, y, data);
-		}
-	}
-
-	inline Tpoint point(void)const
-	{
-		return Tpoint(m_x, m_y);
-	}
-
-	Tpoint find_closest_point(const node * curr_best, double best_dist, const Tpoint & p) const
-	{
-		if (m_x == p.x && m_y == p.y)
-			return p;
-
-		double curr_dist = distance(this->point(), p);
-
-		cout << this->point() << " / " << curr_best->point() << " --- " << curr_dist << " / " << best_dist << endl;
-
-		if (curr_dist < best_dist)
-		{
-			curr_best = this;
-			best_dist = curr_dist;
-		}
-
-		if (m_x < p.x && m_y < p.y)
-		{ // GO DOWNRIGHT
-			if (m_downright != NULL)
-			{
-				cout << "going DOWNRIGHT" << endl;
-				return m_downright->find_closest_point(curr_best, best_dist, p);
-			}
-		}
-		else if (m_x < p.x && m_y >= p.y)
-		{ // GO UPRIGHT
-			if (m_upright != NULL)
-			{
-				cout << "going UPRIGHT" << endl;
-				return m_upright->find_closest_point(curr_best, best_dist, p);
-			}
-		}
-		else if (m_x >= p.x && m_y < p.y)
-		{ // GO DOWNLEFT
-			if (m_downleft != NULL)
-			{
-				cout << "going DOWNLEFT" << endl;
-				return m_downleft->find_closest_point(curr_best, best_dist, p);
-			}
-		}
-		else if (m_x >= p.x && m_y >= p.y)
-		{ // GO UPLEFT
-			if (m_upleft != NULL)
-			{
-				cout << "going UPLEFT" << endl;
-				return m_upleft->find_closest_point(curr_best, best_dist, p);
-			}
-		}
-
-		return curr_best->point();
-	}
-
-	vector<Tpoint> find_n_closest_points(const Tpoint & p, int n) const
-	{
-		return{};
-	}
-
-	friend ostream & operator << (ostream & os, const node & src)
-	{
-		if (src.m_upleft != NULL)
-			os << "\"" << src.m_x << "," << src.m_y << "\" -> " << *src.m_upleft;
-		if (src.m_upright != NULL)
-			os << "\"" << src.m_x << "," << src.m_y << "\" -> " << *src.m_upright;
-		if (src.m_downleft != NULL)
-			os << "\"" << src.m_x << "," << src.m_y << "\" -> " << *src.m_downleft;
-		if (src.m_downright != NULL)
-			os << "\"" << src.m_x << "," << src.m_y << "\" -> " << *src.m_downright;
-
-		if (src.m_upleft == NULL &&
-			src.m_upright == NULL &&
-			src.m_downleft == NULL &&
-			src.m_downright == NULL)
-			os << "\"" << src.m_x << "," << src.m_y << "\"" << ";\n";
-		return os;
-	}
-
-private:
-	int m_x;
-	int m_y;
-	int m_data;
-	node * m_upleft;
-	node * m_upright;
-	node * m_downleft;
-	node * m_downright;
+	Tpoint m_p;
+	Trect m_trect;
+	Trect m_brect;
+	odd_node * m_top;
+	odd_node * m_bot;
 };
 
-class map
+class odd_node
 {
 public:
-	map(void)
-		: m_root(new node())
+	odd_node(const Tpoint & p = {})
+		: m_p(p), m_left(NULL), m_right(NULL)
+	{}
+	~odd_node(void)
 	{
+		delete m_left;
+		delete m_right;
 	}
 
-	~map(void)
+	void insert(const Tpoint & p, const Trect & lrect, const Trect & rrect);
+
+	Tpoint find_closest_point(const Tpoint & p, Tpoint & closest, int & best_dist) const
+	{
+		int dist = sq_distance(p, m_p);
+		if (dist < best_dist)
+		{
+			best_dist = dist;
+			closest = m_p;
+		}
+
+		if (best_dist > sq_distance(get_closest_p(m_lrect, p), p) && m_left != NULL)
+			m_left->find_closest_point(p, closest, best_dist);
+		if (best_dist > sq_distance(get_closest_p(m_rrect, p), p) && m_right != NULL)
+			m_right->find_closest_point(p, closest, best_dist);
+		return closest;
+	}
+
+	//friend ostream & operator << (ostream & os, const odd_node & src)
+	//{
+	//	os << src.m_p << " * " << src.m_lrect << " --- " << src.m_rrect << endl;
+	//	if (src.m_left != NULL)
+	//		os << *src.m_left;
+	//	if (src.m_right != NULL)
+	//		os << *src.m_right;
+	//	return os;
+	//}
+
+	Tpoint m_p;
+	Trect m_lrect;
+	Trect m_rrect;
+	even_node * m_left;
+	even_node * m_right;
+};
+
+even_node::~even_node(void)
+{
+	delete m_top;
+	delete m_bot;
+}
+
+void odd_node::insert(const Tpoint & p, const Trect & lrect, const Trect & rrect)
+{
+	if (p.m_x == m_p.m_x && p.m_y == m_p.m_y)
+		return;
+
+	if (p.m_x < m_p.m_x)
+	{
+		if (m_left == NULL)
+		{
+			m_left = new even_node(p);
+
+			Tpoint ta(lrect.m_upleft);
+			Tpoint tb(lrect.m_downright.m_x, p.m_y);
+			Tpoint ba(lrect.m_upleft.m_x, p.m_y);
+			Tpoint bb(lrect.m_downright);
+
+			Trect trect(ta, tb);
+			Trect brect(ba, bb);
+			m_left->m_trect = trect;
+			m_left->m_brect = brect;
+		}
+		else
+		{
+			m_left->insert(p, m_left->m_trect, m_left->m_brect);
+		}
+	}
+	else
+	{
+		if (m_right == NULL)
+		{
+			m_right = new even_node(p);
+
+			Tpoint ta(rrect.m_upleft);
+			Tpoint tb(rrect.m_downright.m_x, p.m_y);
+			Tpoint ba(rrect.m_upleft.m_x, p.m_y);
+			Tpoint bb(rrect.m_downright);
+
+			Trect trect(ta, tb);
+			Trect brect(ba, bb);
+			m_right->m_trect = trect;
+			m_right->m_brect = brect;
+		}
+		else
+		{
+			m_right->insert(p, m_right->m_trect, m_right->m_brect);
+		}
+	}
+}
+
+void even_node::insert(const Tpoint & p, const Trect & trect, const Trect & brect)
+{
+	if (p.m_x == m_p.m_x && p.m_y == m_p.m_y)
+		return;
+	if (p.m_y > m_p.m_y)
+	{
+		if (m_bot == NULL)
+		{
+			m_bot = new odd_node(p);
+
+			Tpoint la(brect.m_upleft);
+			Tpoint lb(p.m_x, brect.m_downright.m_y);
+			Tpoint ra(p.m_x, brect.m_upleft.m_y);
+			Tpoint rb(brect.m_downright);
+
+			Trect lrect(la, lb);
+			Trect rrect(ra, rb);
+			m_bot->m_lrect = lrect;
+			m_bot->m_rrect = rrect;
+		}
+		else
+		{
+			m_bot->insert(p, m_bot->m_lrect, m_bot->m_rrect);
+		}
+	}
+	else
+	{
+		if (m_top == NULL)
+		{
+			m_top = new odd_node(p);
+
+			Tpoint la(trect.m_upleft);
+			Tpoint lb(p.m_x, trect.m_downright.m_y);
+			Tpoint ra(p.m_x, trect.m_upleft.m_y);
+			Tpoint rb(trect.m_downright);
+
+			Trect lrect(la, lb);
+			Trect rrect(ra, rb);
+			m_top->m_lrect = lrect;
+			m_top->m_rrect = rrect;
+		}
+		else
+		{
+			m_top->insert(p, m_top->m_lrect, m_top->m_rrect);
+		}
+	}
+}
+
+Tpoint even_node::find_closest_point(const Tpoint & p, Tpoint & closest, int & best_dist) const
+{
+	int dist = sq_distance(p, m_p);
+	if (dist < best_dist)
+	{
+		best_dist = dist;
+		closest = m_p;
+	}
+
+	if (best_dist > sq_distance(get_closest_p(m_brect, p), p) && m_bot != NULL)
+		m_bot->find_closest_point(p, closest, best_dist);
+	if (best_dist > sq_distance(get_closest_p(m_trect, p), p) && m_top != NULL)
+		m_top->find_closest_point(p, closest, best_dist);
+	
+	return closest;
+}
+
+//ostream & operator << (ostream & os, const even_node & src)
+//{
+//	os << src.m_p << " * " << src.m_trect << " --- " << src.m_brect << endl;
+//	if (src.m_bot != NULL)
+//		os << *src.m_bot;
+//	if (src.m_top != NULL)
+//		os << *src.m_top;
+//	return os;
+//}
+
+class kdtree
+{
+public:
+	kdtree(void)
+		: m_root(NULL)
+	{}
+	~kdtree(void)
 	{
 		delete m_root;
 	}
 
-	void insert(int x = 0, int y = 0, int data = 0)
+	void insert(int x, int y)
+	{
+		insert(Tpoint(x, y));
+	}
+
+	void insert(const Tpoint & p)
+	{
+		//if (p.m_x < GMIN || p.m_x > GMAX ||
+		//	p.m_y < GMIN || p.m_x > GMAX)
+		//	return;
+		if (m_root == NULL)
+		{
+			Tpoint la(0, 0);
+			Tpoint lb(p.m_x, Graphics::ScreenHeight - 1);
+			Tpoint ra(p.m_x, 0);
+			Tpoint rb(Graphics::ScreenWidth - 1, Graphics::ScreenHeight - 1);
+			Trect lrect(la, lb);
+			Trect rrect(ra, rb);
+
+			// if point is out of bound - do not insert it
+			if (p.m_x < lrect.m_upleft.m_x ||
+				p.m_x > rrect.m_downright.m_x ||
+				p.m_y < lrect.m_upleft.m_y ||
+				p.m_y > rrect.m_downright.m_y)
+				return;
+
+			m_root = new odd_node(p);
+
+			m_root->m_lrect = lrect;
+			m_root->m_rrect = rrect;
+		}
+		else
+		{
+			// if point is out of bound - do not insert it
+			if (p.m_x < m_root->m_lrect.m_upleft.m_x ||
+				p.m_x > m_root->m_rrect.m_downright.m_x ||
+				p.m_y < m_root->m_lrect.m_upleft.m_y ||
+				p.m_y > m_root->m_rrect.m_downright.m_y)
+				return;
+			m_root->insert(p, m_root->m_lrect, m_root->m_rrect);
+		}
+	}
+
+	void erase(const Tpoint & p)
 	{
 		if (m_root == NULL)
-			m_root = new node(data);
+			return;
 		else
-			m_root->insert(x, y, data);
+		{
+			return;
+		}
 	}
 
 	Tpoint find_closest_point(const Tpoint & p) const
 	{
 		if (m_root == NULL)
-			return Tpoint(0, 0);
+			return Tpoint();
 		else
-			return m_root->find_closest_point(m_root, distance(m_root->point(), p), p);
+		{
+			Tpoint closest = m_root->m_p;
+			int best_dist = sq_distance(p, m_root->m_p);
+			m_root->find_closest_point(p, closest, best_dist);
+			return closest;
+		}
 	}
 
-	vector<Tpoint> find_n_closest_points(const Tpoint & p, int n) const
-	{
-		if (m_root == NULL)
-			return vector<Tpoint>();
-		else
-			return m_root->find_n_closest_points(p, n);
-	}
-
-
-	friend ostream & operator << (ostream & os, const map & src)
-	{
-		if (src.m_root == NULL)
-			return os;
-		else
-			return os << *src.m_root;
-	}
-
-	void Draw(const Graphics & gfx)
-	{
-		if(m_root)
-	}
-private:
-	node * m_root;
+	//friend ostream & operator << (ostream & os, const kdtree & src)
+	//{
+	//	if (src.m_root != NULL)
+	//		os << *src.m_root;
+	//	return os;
+	//}
+//private:
+	odd_node * m_root;
 };
 
 class CTimer
@@ -256,39 +397,147 @@ private:
 	chrono::time_point<chrono::system_clock> start;
 };
 
-map m;
-Tpoint p(7, 4);
-
-Game::Game( MainWindow& wnd )
-	:
-	wnd( wnd ),
-	gfx( wnd )
+void draw_rect(Graphics & gfx, const Trect & rect, const Color & c = Colors::Cyan)
 {
-	srand(unsigned(time(0)));
-
-	for (int i = 0; i < 100; ++i)
+	for (int i = rect.m_upleft.m_x; i <= rect.m_downright.m_x; ++i)
 	{
-		int x = rand() % 20 - 10;
-		int y = rand() % 20 - 10;
-		cerr << x << "\t" << y << endl;
-		m.insert(x, y, rand() % 5464564);
+		if (i >= 0 && i < Graphics::ScreenWidth && rect.m_upleft.m_y >= 0 && rect.m_downright.m_y < Graphics::ScreenHeight)
+		{
+			gfx.PutPixel(i, rect.m_upleft.m_y, c);
+			gfx.PutPixel(i, rect.m_downright.m_y, c);
+		}
+	}
+	for (int i = rect.m_upleft.m_y; i <= rect.m_downright.m_y; ++i)
+	{
+		if (i >= 0 && i < Graphics::ScreenWidth && rect.m_upleft.m_y >= 0 && rect.m_downright.m_y < Graphics::ScreenHeight)
+		{
+			gfx.PutPixel(rect.m_upleft.m_x, i, c);
+			gfx.PutPixel(rect.m_downright.m_x, i, c);
+		}
 	}
 
 }
 
+void draw_point(Graphics & gfx, const Tpoint & p, const Color & c)
+{
+	if (p.m_x > 1 && p.m_y > 1 &&
+		p.m_x < Graphics::ScreenWidth - 1 &&
+		p.m_y < Graphics::ScreenHeight - 1)
+	{
+		gfx.PutPixel(p.m_x - 1, p.m_y - 1, c);
+		gfx.PutPixel(p.m_x - 1, p.m_y + 1, c);
+		gfx.PutPixel(p.m_x + 1, p.m_y - 1, c);
+		gfx.PutPixel(p.m_x + 1, p.m_y + 1, c);
+
+		gfx.PutPixel(p.m_x, p.m_y, c);
+	}
+}
+
+bool draw_rect_bool = false;
+
+void draw_odd_node(Graphics & gfx, const odd_node * n);
+void draw_even_node(Graphics & gfx, const even_node * n)
+{
+	if (n->m_bot != NULL)
+		draw_odd_node(gfx, n->m_bot);
+	if (n->m_top != NULL)
+		draw_odd_node(gfx, n->m_top);
+
+	if (draw_rect_bool == true)
+	{
+		draw_rect(gfx, n->m_brect);
+		draw_rect(gfx, n->m_trect);
+	}
+	draw_point(gfx, n->m_p, Colors::Red);
+}
+
+void draw_odd_node(Graphics & gfx, const odd_node * n)
+{
+	if (n->m_left != NULL)
+		draw_even_node(gfx, n->m_left);
+	if (n->m_right != NULL)
+		draw_even_node(gfx, n->m_right);
+
+	if (draw_rect_bool == true)
+	{
+		draw_rect(gfx, n->m_lrect);
+		draw_rect(gfx, n->m_rrect);
+	}
+	draw_point(gfx, n->m_p, Colors::Blue);
+}
+
+void draw_kdtree(Graphics & gfx, const kdtree & t)
+{
+	if (t.m_root == NULL)
+		return;
+	else
+	{
+		draw_odd_node(gfx, t.m_root);
+	}
+}
+
+int random_int(int min, int max)
+{
+	int range = max - min + 1;
+	return (rand() % range) + min;
+}
+
+kdtree t;
+Tpoint p;
+Tpoint closest;
+
+Game::Game(MainWindow& wnd)
+	:
+	wnd(wnd),
+	gfx(wnd)
+{
+	srand(unsigned(time(0)));
+
+	for (int i = 0; i < 100; ++i)
+		t.insert(Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1)));
+
+	p = Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1));
+	closest = t.find_closest_point(p);
+}
+
 void Game::Go()
 {
-	gfx.BeginFrame();	
+	if (wnd.kbd.KeyIsPressed(VK_ESCAPE))
+		exit(0);
+	gfx.BeginFrame();
 	UpdateModel();
 	ComposeFrame();
 	gfx.EndFrame();
 }
 
+bool space_pressed = true;
+
 void Game::UpdateModel()
 {
+	if (wnd.mouse.LeftIsPressed())
+	{
+		//p = Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1));
+		p = Tpoint(wnd.mouse.GetPosX(), wnd.mouse.GetPosY());
+		closest = t.find_closest_point(p);
+	}
+
+	if (wnd.kbd.KeyIsPressed(VK_SPACE))
+	{
+		for (int i = 0; i < 100; ++i)
+			t.insert(Tpoint(random_int(0, Graphics::ScreenWidth), random_int(0, Graphics::ScreenHeight)));
+	}
+
+	if (wnd.kbd.KeyIsPressed(VK_UP))
+		draw_rect_bool = true;
+
+	if (wnd.kbd.KeyIsPressed(VK_DOWN))
+		draw_rect_bool = false;
 }
 
 void Game::ComposeFrame()
 {
+	draw_kdtree(gfx, t);
 
+	draw_point(gfx, p, Colors::Green);
+	draw_point(gfx, closest, Colors::Magenta);
 }
