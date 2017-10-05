@@ -29,8 +29,8 @@ using namespace std;
 //#define GMIN -100
 //#define GMAX 100
 
-#define GMIN 10
-#define GMAX (Graphics::ScreenHeight - 10)
+#define GMIN 0
+#define GMAX (Graphics::ScreenHeight - 1)
 
 double my_distance(const Tpoint & a, const Tpoint & b)
 {
@@ -51,13 +51,13 @@ Tpoint get_closest_p(const Trect & rect, const Tpoint & p)
 	  ---+---+---
 	   7 | 8 | 9 */
 
-	if (p.m_x > rect.m_upleft.m_x)
+	if (p.m_x < rect.m_upleft.m_x)
 	{
-		if (p.m_y > rect.m_upleft.m_y)
+		if (p.m_y < rect.m_upleft.m_y)
 		{	// no.: 1
 			return Tpoint(rect.m_upleft);
 		}
-		else if (p.m_y < rect.m_downright.m_y)
+		else if (p.m_y > rect.m_downright.m_y)
 		{	// no.: 7
 			return Tpoint(rect.m_upleft.m_x, rect.m_downright.m_y);
 		}
@@ -66,13 +66,13 @@ Tpoint get_closest_p(const Trect & rect, const Tpoint & p)
 			return Tpoint(rect.m_upleft.m_x, p.m_y);
 		}
 	}
-	else if (p.m_x < rect.m_downright.m_x)
+	else if (p.m_x > rect.m_downright.m_x)
 	{
-		if (p.m_y > rect.m_upleft.m_y)
+		if (p.m_y < rect.m_upleft.m_y)
 		{	// no.: 3
 			return Tpoint(rect.m_downright.m_x, rect.m_upleft.m_y);
 		}
-		else if (p.m_y < rect.m_downright.m_y)
+		else if (p.m_y > rect.m_downright.m_y)
 		{	// no.: 9
 			return Tpoint(rect.m_downright);
 		}
@@ -83,11 +83,11 @@ Tpoint get_closest_p(const Trect & rect, const Tpoint & p)
 	}
 	else
 	{
-		if (p.m_y > rect.m_upleft.m_y)
+		if (p.m_y < rect.m_upleft.m_y)
 		{	// no.: 2
 			return Tpoint(p.m_x, rect.m_upleft.m_y);
 		}
-		else if (p.m_y < rect.m_downright.m_y)
+		else if (p.m_y > rect.m_downright.m_y)
 		{	// no.: 8
 			return Tpoint(p.m_x, rect.m_downright.m_y);
 		}
@@ -108,7 +108,6 @@ public:
 	~even_node(void);
 	void insert(const Tpoint & p, const Trect & lrect, const Trect & rrect);
 	Tpoint find_closest_point(const Tpoint & p, Tpoint & closest, int & best_dist) const;
-	//friend ostream & operator << (ostream & os, const even_node & src);
 
 	Tpoint m_p;
 	Trect m_trect;
@@ -146,16 +145,6 @@ public:
 			m_right->find_closest_point(p, closest, best_dist);
 		return closest;
 	}
-
-	//friend ostream & operator << (ostream & os, const odd_node & src)
-	//{
-	//	os << src.m_p << " * " << src.m_lrect << " --- " << src.m_rrect << endl;
-	//	if (src.m_left != NULL)
-	//		os << *src.m_left;
-	//	if (src.m_right != NULL)
-	//		os << *src.m_right;
-	//	return os;
-	//}
 
 	Tpoint m_p;
 	Trect m_lrect;
@@ -284,16 +273,6 @@ Tpoint even_node::find_closest_point(const Tpoint & p, Tpoint & closest, int & b
 	return closest;
 }
 
-//ostream & operator << (ostream & os, const even_node & src)
-//{
-//	os << src.m_p << " * " << src.m_trect << " --- " << src.m_brect << endl;
-//	if (src.m_bot != NULL)
-//		os << *src.m_bot;
-//	if (src.m_top != NULL)
-//		os << *src.m_top;
-//	return os;
-//}
-
 class kdtree
 {
 public:
@@ -312,9 +291,6 @@ public:
 
 	void insert(const Tpoint & p)
 	{
-		//if (p.m_x < GMIN || p.m_x > GMAX ||
-		//	p.m_y < GMIN || p.m_x > GMAX)
-		//	return;
 		if (m_root == NULL)
 		{
 			Tpoint la(0, 0);
@@ -324,7 +300,6 @@ public:
 			Trect lrect(la, lb);
 			Trect rrect(ra, rb);
 
-			// if point is out of bound - do not insert it
 			if (p.m_x < lrect.m_upleft.m_x ||
 				p.m_x > rrect.m_downright.m_x ||
 				p.m_y < lrect.m_upleft.m_y ||
@@ -338,7 +313,6 @@ public:
 		}
 		else
 		{
-			// if point is out of bound - do not insert it
 			if (p.m_x < m_root->m_lrect.m_upleft.m_x ||
 				p.m_x > m_root->m_rrect.m_downright.m_x ||
 				p.m_y < m_root->m_lrect.m_upleft.m_y ||
@@ -371,13 +345,6 @@ public:
 		}
 	}
 
-	//friend ostream & operator << (ostream & os, const kdtree & src)
-	//{
-	//	if (src.m_root != NULL)
-	//		os << *src.m_root;
-	//	return os;
-	//}
-//private:
 	odd_node * m_root;
 };
 
@@ -534,10 +501,20 @@ void Game::UpdateModel()
 		draw_rect_bool = false;
 }
 
+Trect mr(Tpoint(100, 100), Tpoint(300, 300));
+Tpoint cl;
+
 void Game::ComposeFrame()
 {
 	draw_kdtree(gfx, t);
-
+	
 	draw_point(gfx, p, Colors::Green);
-	draw_point(gfx, closest, Colors::Magenta);
+	draw_point(gfx, closest, Colors::White);
+
+	//draw_rect(gfx, mr);
+	//Tpoint p(wnd.mouse.GetPosX(), wnd.mouse.GetPosY());
+	//cl = get_closest_p(mr, p);
+	//draw_point(gfx, p, Colors::Red);
+	//draw_point(gfx, cl, Colors::Blue);
+	
 }
