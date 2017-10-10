@@ -485,7 +485,13 @@ void Game::UpdateModel()
 	{
 		//p = Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1));
 		p = Tpoint(wnd.mouse.GetPosX(), wnd.mouse.GetPosY());
-		closest = t.find_closest_point(p);
+		for (int i = 0; i < 10000; ++i)
+			closest = t.find_closest_point(p);
+	}
+
+	if (wnd.mouse.RightIsPressed())
+	{
+		t.insert(Tpoint(wnd.mouse.GetPosX(), wnd.mouse.GetPosY()));
 	}
 
 	if (wnd.kbd.KeyIsPressed(VK_SPACE))
