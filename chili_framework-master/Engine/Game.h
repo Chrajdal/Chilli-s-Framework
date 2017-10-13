@@ -16,8 +16,8 @@ struct Tpoint
 
 	Tpoint & operator = (const Tpoint & src)
 	{
-		//if (this == &src)
-		//	return *this;
+		if (this == &src)
+			return *this;
 		m_x = src.m_x;
 		m_y = src.m_y;
 		return *this;
@@ -44,8 +44,8 @@ struct Trect
 
 	Trect & operator = (const Trect & src)
 	{
-		//if (this == &src)
-		//	return *this;
+		if (this == &src)
+			return *this;
 		m_upleft = src.m_upleft;
 		m_downright = src.m_downright;
 		return *this;
@@ -74,12 +74,4 @@ private:
 private:
 	MainWindow& wnd;
 	Graphics gfx;
-
-	//Trect t;
-	//Tpoint a;
-	//Tpoint b;
-	//Tpoint p;
-	//Tpoint closest;
-
-	//kdtree t;
 };
