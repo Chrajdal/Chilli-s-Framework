@@ -164,5 +164,36 @@ public:
 		}
 	}
 
-
+	//Midpoint circle algorithm
+	void draw_circle(int _x, int _y, int radius, const Color & c)
+	{
+		int x = radius - 1;
+		int y = 0;
+		int dx = 1;
+		int dy = 1;
+		int err = dx - (radius << 1);
+		while (x >= y)
+		{
+			PutPixel(_x + x, _y + y, c);
+			PutPixel(_x + y, _y + x, c);
+			PutPixel(_x - y, _y + x, c);
+			PutPixel(_x - x, _y + y, c);
+			PutPixel(_x - x, _y - y, c);
+			PutPixel(_x - y, _y - x, c);
+			PutPixel(_x + y, _y - x, c);
+			PutPixel(_x + x, _y - y, c);
+			if (err <= 0)
+			{
+				y++;
+				err += dy;
+				dy += 2;
+			}
+			if (err > 0)
+			{
+				x--;
+				dx += 2;
+				err += (-radius << 1) + dx;
+			}
+		}
+	}
 };
