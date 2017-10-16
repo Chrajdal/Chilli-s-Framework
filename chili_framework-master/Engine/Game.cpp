@@ -22,9 +22,51 @@
 #include "Game.h"
 
 using namespace std;
+using namespace Colors;
 
-#define GMIN 0
-#define GMAX (Graphics::ScreenHeight - 1)
+#define GMINY 0
+#define GMAXY (Graphics::ScreenHeight - 1)
+#define GMINX 0
+#define GMAXX (Graphics::ScreenWidth - 1)
+
+vector<Color> color_palette =
+{
+	Color(248,  12,  18),
+	Color(248,  15,  10),
+	Color(238,  17,   0),
+	Color(246,  34,   8),
+	Color(255,  51,  17),
+	Color(255,  60,  25),
+	Color(255,  68,  34),
+	Color(255,  85,  51),
+	Color(255, 102,  68),
+	Color(255, 127,  59),
+	Color(255, 153,  51),
+	Color(254, 163,  48),
+	Color(254, 174,  45),
+	Color(229, 180,  48),
+	Color(204, 187,  51),
+	Color(204, 191,  33),
+	Color(206, 195,  16),
+	Color(188, 199,  25),
+	Color(170, 204,  34),
+	Color(137, 206,  35),
+	Color(105, 208,  37),
+	Color( 69, 206, 103),
+	Color( 34, 204, 170),
+	Color( 26, 196, 177),
+	Color( 18, 189, 185),
+	Color( 18, 180, 186),
+	Color( 17, 170, 187),
+	Color( 42, 119, 204),
+	Color( 68,  68, 221),
+	Color( 59,  42, 204),
+	Color( 51,  17, 187),
+	Color( 55,  14, 188),
+	Color( 59,  12, 189),
+	Color( 63,  23, 171),
+	Color( 68,  34, 153)
+};
 
 double my_distance(const Tpoint & a, const Tpoint & b)
 {
@@ -100,19 +142,19 @@ public:
 		const Trect m_downleft_rect = {},
 		const Trect m_downright_rect = {})
 		: m_p(p),
-		m_upleft_rect(),
-		m_upright_rect(),
-		m_downleft_rect(),
-		m_downright_rect(),
-		m_upleft(NULL), m_upright(NULL), m_downleft(NULL), m_downright(NULL)
+		m_ul_r(),
+		m_ur_r(),
+		m_dl_r(),
+		m_dr_r(),
+		m_ul(NULL), m_ur(NULL), m_dl(NULL), m_dr(NULL)
 	{}
 
 	~node(void)
 	{
-		delete m_upleft;
-		delete m_upright;
-		delete m_downleft;
-		delete m_downright;
+		delete m_ul;
+		delete m_ur;
+		delete m_dl;
+		delete m_dr;
 	}
 
 	void insert(const Tpoint & p, const node * parent)
@@ -124,46 +166,46 @@ public:
 		{
 			if (p.m_x < m_p.m_x) // UP-LEFT
 			{
-				if (m_upleft == NULL)
+				if (m_ul == NULL)
 				{
-					m_upleft = new node(p);
-					int MIN_X = parent->m_upleft_rect.m_upleft.m_x;
+					m_ul = new node(p);
+					int MIN_X = parent->m_ul_r.m_upleft.m_x;
 					int MID_X = p.m_x;
-					int MAX_X = parent->m_upleft_rect.m_downright.m_x;
-					int MIN_Y = parent->m_upleft_rect.m_upleft.m_y;
+					int MAX_X = parent->m_ul_r.m_downright.m_x;
+					int MIN_Y = parent->m_ul_r.m_upleft.m_y;
 					int MID_Y = p.m_y;
-					int MAX_Y = parent->m_upleft_rect.m_downright.m_y;
+					int MAX_Y = parent->m_ul_r.m_downright.m_y;
 
-					m_upleft->m_upleft_rect = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
-					m_upleft->m_upright_rect = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
-					m_upleft->m_downleft_rect = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
-					m_upleft->m_downright_rect = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
+					m_ul->m_ul_r = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
+					m_ul->m_ur_r = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
+					m_ul->m_dl_r = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
+					m_ul->m_dr_r = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
 				}
 				else
 				{
-					m_upleft->insert(p, m_upleft);
+					m_ul->insert(p, m_ul);
 				}
 			}
 			else // (p.m_x >= m_p.m_x) // UP-RIGHT
 			{
-				if (m_upright == NULL)
+				if (m_ur == NULL)
 				{
-					m_upright = new node(p);
-					int MIN_X = parent->m_upright_rect.m_upleft.m_x;
+					m_ur = new node(p);
+					int MIN_X = parent->m_ur_r.m_upleft.m_x;
 					int MID_X = p.m_x;
-					int MAX_X = parent->m_upright_rect.m_downright.m_x;
-					int MIN_Y = parent->m_upright_rect.m_upleft.m_y;
+					int MAX_X = parent->m_ur_r.m_downright.m_x;
+					int MIN_Y = parent->m_ur_r.m_upleft.m_y;
 					int MID_Y = p.m_y;
-					int MAX_Y = parent->m_upright_rect.m_downright.m_y;
+					int MAX_Y = parent->m_ur_r.m_downright.m_y;
 
-					m_upright->m_upleft_rect = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
-					m_upright->m_upright_rect = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
-					m_upright->m_downleft_rect = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
-					m_upright->m_downright_rect = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
+					m_ur->m_ul_r = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
+					m_ur->m_ur_r = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
+					m_ur->m_dl_r = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
+					m_ur->m_dr_r = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
 				}
 				else
 				{
-					m_upright->insert(p, m_upright);
+					m_ur->insert(p, m_ur);
 				}
 			}
 		}
@@ -171,46 +213,46 @@ public:
 		{
 			if (p.m_x < m_p.m_x) // DOWN-LEFT
 			{
-				if (m_downleft == NULL)
+				if (m_dl == NULL)
 				{
-					m_downleft = new node(p);
-					int MIN_X = parent->m_downleft_rect.m_upleft.m_x;
+					m_dl = new node(p);
+					int MIN_X = parent->m_dl_r.m_upleft.m_x;
 					int MID_X = p.m_x;
-					int MAX_X = parent->m_downleft_rect.m_downright.m_x;
-					int MIN_Y = parent->m_downleft_rect.m_upleft.m_y;
+					int MAX_X = parent->m_dl_r.m_downright.m_x;
+					int MIN_Y = parent->m_dl_r.m_upleft.m_y;
 					int MID_Y = p.m_y;
-					int MAX_Y = parent->m_downleft_rect.m_downright.m_y;
+					int MAX_Y = parent->m_dl_r.m_downright.m_y;
 
-					m_downleft->m_upleft_rect = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
-					m_downleft->m_upright_rect = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
-					m_downleft->m_downleft_rect = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
-					m_downleft->m_downright_rect = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
+					m_dl->m_ul_r = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
+					m_dl->m_ur_r = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
+					m_dl->m_dl_r = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
+					m_dl->m_dr_r = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
 				}
 				else
 				{
-					m_downleft->insert(p, m_downleft);
+					m_dl->insert(p, m_dl);
 				}
 			}
 			else // DOWN-RIGHT
 			{
-				if (m_downright == NULL)
+				if (m_dr == NULL)
 				{
-					m_downright = new node(p);
-					int MIN_X = parent->m_downright_rect.m_upleft.m_x;
+					m_dr = new node(p);
+					int MIN_X = parent->m_dr_r.m_upleft.m_x;
 					int MID_X = p.m_x;
-					int MAX_X = parent->m_downright_rect.m_downright.m_x;
-					int MIN_Y = parent->m_downright_rect.m_upleft.m_y;
+					int MAX_X = parent->m_dr_r.m_downright.m_x;
+					int MIN_Y = parent->m_dr_r.m_upleft.m_y;
 					int MID_Y = p.m_y;
-					int MAX_Y = parent->m_downright_rect.m_downright.m_y;
+					int MAX_Y = parent->m_dr_r.m_downright.m_y;
 
-					m_downright->m_upleft_rect = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
-					m_downright->m_upright_rect = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
-					m_downright->m_downleft_rect = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
-					m_downright->m_downright_rect = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
+					m_dr->m_ul_r = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
+					m_dr->m_ur_r = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
+					m_dr->m_dl_r = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
+					m_dr->m_dr_r = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
 				}
 				else
 				{
-					m_downright->insert(p, m_downright);
+					m_dr->insert(p, m_dr);
 				}
 			}
 		}
@@ -218,47 +260,58 @@ public:
 
 	Tpoint find_closest_point(const Tpoint & p, Tpoint & closest, unsigned long long & best_dist) const
 	{
-		int dist = sq_distance(p, m_p);
-		if (dist <= best_dist)
+		unsigned long long dist = sq_distance(p, m_p);
+		if (dist < best_dist)
 		{
 			best_dist = dist;
 			closest = m_p;
 		}
 
-		if (best_dist > sq_distance(get_closest_p(m_upleft_rect, p), p) && m_upleft != NULL)
-			m_upleft->find_closest_point(p, closest, best_dist);
-		if (best_dist > sq_distance(get_closest_p(m_upright_rect, p), p) && m_upright != NULL)
-			m_upright->find_closest_point(p, closest, best_dist);
-		if (best_dist > sq_distance(get_closest_p(m_downleft_rect, p), p) && m_downleft != NULL)
-			m_downleft->find_closest_point(p, closest, best_dist);
-		if (best_dist > sq_distance(get_closest_p(m_downright_rect, p), p) && m_downright != NULL)
-			m_downright->find_closest_point(p, closest, best_dist);
+		if (best_dist > sq_distance(get_closest_p(m_ul_r, p), p) && m_ul != NULL)
+			m_ul->find_closest_point(p, closest, best_dist);
+		if (best_dist > sq_distance(get_closest_p(m_ur_r, p), p) && m_ur != NULL)
+			m_ur->find_closest_point(p, closest, best_dist);
+		if (best_dist > sq_distance(get_closest_p(m_dl_r, p), p) && m_dl != NULL)
+			m_dl->find_closest_point(p, closest, best_dist);
+		if (best_dist > sq_distance(get_closest_p(m_dr_r, p), p) && m_dr != NULL)
+			m_dr->find_closest_point(p, closest, best_dist);
 
 		return closest;
 	}
 
-	/*
-	friend ostream & operator <<(ostream & os, const node & src)
+	vector<Tpoint> find_n_closest_points(const Tpoint & p, int n, unsigned long long max_dist, unsigned long long min_dist, const vector<Tpoint> & found) const
 	{
-		os << src.m_p << " ----- " << src.m_upleft_rect << " / " << src.m_upright_rect << " / " <<
-			src.m_downleft_rect << " / " << src.m_downright_rect << endl;
-		if (src.m_upleft != NULL)
-			os << *src.m_upleft;
-		if (src.m_upright != NULL)
-			os << *src.m_upright;
-		if (src.m_downleft != NULL)
-			os << *src.m_downleft;
-		if (src.m_downright != NULL)
-			os << *src.m_downright;
-		return os;
+		unsigned long long curr_dist = sq_distance(p, m_p);
+		//if(curr_dist < min_dist)
+
+		//if (best_dist > sq_distance(get_closest_p(m_downright_rect, p), p) && m_downright != NULL)
+		//	m_downright->find_closest_point(p, closest, best_dist);
+		if (m_ul != NULL)
+		{
+			unsigned long long curr_dist = sq_distance(get_closest_p(m_ul_r, p), p);
+		}
+		if (m_ur != NULL)
+		{
+
+		}
+		if (m_dl != NULL)
+		{
+
+		}
+		if (m_dr != NULL)
+		{
+
+		}
+
+		return found;
 	}
-	*/
+
 	Tpoint m_p;
-	Trect m_upleft_rect, m_upright_rect, m_downleft_rect, m_downright_rect;
-	node * m_upleft;
-	node * m_upright;
-	node * m_downleft;
-	node * m_downright;
+	Trect m_ul_r, m_ur_r, m_dl_r, m_dr_r;
+	node * m_ul;
+	node * m_ur;
+	node * m_dl;
+	node * m_dr;
 };
 
 class quad_tree
@@ -279,28 +332,34 @@ class quad_tree
 
 	  void insert(const Tpoint & p)
 	  {
-		  if (p.m_x < GMIN || p.m_x > GMAX || p.m_y < GMIN || p.m_y > GMAX)
+		  if (p.m_x < GMINX || p.m_x >= GMAXX || p.m_y < GMINY || p.m_y >= GMAXY)
 			  return;
 
 		  if (m_root == NULL)
 		  {
 			  m_root = new node(p);
-			  int MIN_X = GMIN;
+			  int MIN_X = GMINX;
 			  int MID_X = p.m_x;
-			  int MAX_X = GMAX;
-			  int MIN_Y = GMIN;
+			  int MAX_X = GMAXX;
+			  int MIN_Y = GMINY;
 			  int MID_Y = p.m_y;
-			  int MAX_Y = GMAX;
+			  int MAX_Y = GMAXY;
 
-			  m_root->m_upleft_rect = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
-			  m_root->m_upright_rect = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
-			  m_root->m_downleft_rect = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
-			  m_root->m_downright_rect = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
+			  m_root->m_ul_r = Trect(Tpoint(MIN_X, MIN_Y), Tpoint(MID_X, MID_Y));
+			  m_root->m_ur_r = Trect(Tpoint(MID_X, MIN_Y), Tpoint(MAX_X, MID_Y));
+			  m_root->m_dl_r = Trect(Tpoint(MIN_X, MID_Y), Tpoint(MID_X, MAX_Y));
+			  m_root->m_dr_r = Trect(Tpoint(MID_X, MID_Y), Tpoint(MAX_X, MAX_Y));
 		  }
 		  else
 		  {
 			  m_root->insert(p, m_root);
 		  }
+	  }
+
+	  void clear(void)
+	  {
+		  delete m_root;
+		  m_root = NULL;
 	  }
 
 	  Tpoint find_closest_point(const Tpoint & p) const
@@ -315,14 +374,17 @@ class quad_tree
 		  }
 	  }
 
-	  /*
-	  friend ostream & operator << (ostream & os, const quad_tree & src)
+	  vector<Tpoint> find_n_closest_points(const Tpoint & p, int n)
 	  {
-		  if (src.m_root != NULL)
-			  os << *src.m_root;
-		  return os;
+		  if (m_root == NULL)
+			  return vector<Tpoint>();
+		  else
+		  {
+			  unsigned long long min_dist = 0, max_dist = 0;
+			  vector<Tpoint> res;
+			  return m_root->find_n_closest_points(m_root->m_p, n, min_dist, max_dist, res);
+		  }
 	  }
-	  */
 public:
 	node * m_root;
 };
@@ -363,7 +425,7 @@ void draw_rect(Graphics & gfx, const Trect & rect, const Color & c = Colors::Cya
 	}
 }
 
-void draw_point(Graphics & gfx, const Tpoint & p, const Color & c)
+void draw_point(Graphics & gfx, const Tpoint & p, const Color & c = Colors::White)
 {
 	if (p.m_x > 1 && p.m_y > 1 &&
 		p.m_x < Graphics::ScreenWidth - 1 &&
@@ -373,32 +435,28 @@ void draw_point(Graphics & gfx, const Tpoint & p, const Color & c)
 		gfx.PutPixel(p.m_x - 1, p.m_y + 1, c);
 		gfx.PutPixel(p.m_x + 1, p.m_y - 1, c);
 		gfx.PutPixel(p.m_x + 1, p.m_y + 1, c);
-
+		
 		gfx.PutPixel(p.m_x, p.m_y, c);
 	}
 }
 
 bool draw_rect_bool = false;
 
-void draw_node(Graphics & gfx, const node const * n)
+void draw_node(Graphics & gfx, const node const * n, int depth = 0)
 {
-	if (n->m_upleft != NULL)
-		draw_node(gfx, n->m_upleft);
-	if (n->m_upright != NULL)
-		draw_node(gfx, n->m_upright);
-	if (n->m_downleft != NULL)
-		draw_node(gfx, n->m_downleft);
-	if (n->m_downright != NULL)
-		draw_node(gfx, n->m_downright);
+	if (n->m_ul != NULL) draw_node(gfx, n->m_ul, depth + 1);
+	if (n->m_ur != NULL) draw_node(gfx, n->m_ur, depth + 1);
+	if (n->m_dl != NULL) draw_node(gfx, n->m_dl, depth + 1);
+	if (n->m_dr != NULL) draw_node(gfx, n->m_dr, depth + 1);
 
 	if (draw_rect_bool == true)
 	{
-		draw_rect(gfx, n->m_upleft_rect, Colors::Red);
-		draw_rect(gfx, n->m_upright_rect, Colors::Green);
-		draw_rect(gfx, n->m_downleft_rect, Colors::Blue);
-		draw_rect(gfx, n->m_downright_rect, Colors::Yellow);
+		gfx.draw_line(n->m_p.m_x, n->m_p.m_y, n->m_p.m_x,                n->m_ul_r.m_upleft.m_y,    Colors::Green);
+		gfx.draw_line(n->m_p.m_x, n->m_p.m_y, n->m_p.m_x,                n->m_dr_r.m_downright.m_y, Colors::Blue);
+		gfx.draw_line(n->m_p.m_x, n->m_p.m_y, n->m_ul_r.m_upleft.m_x,    n->m_p.m_y,                Colors::Yellow);
+		gfx.draw_line(n->m_p.m_x, n->m_p.m_y, n->m_dr_r.m_downright.m_x, n->m_p.m_y,                Colors::Red);
 	}
-	draw_point(gfx, n->m_p, Colors::White);
+	draw_point(gfx, n->m_p, color_palette[(depth % color_palette.size())]);
 }
 
 void draw_quad_tree(Graphics & gfx, const quad_tree & t)
@@ -417,7 +475,7 @@ quad_tree t;
 Tpoint p;
 Tpoint closest;
 
-Game::Game(MainWindow& wnd)
+Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
@@ -459,8 +517,17 @@ void Game::UpdateModel()
 
 	if (wnd.kbd.KeyIsPressed(VK_SPACE))
 	{
+		//for (int i = 0; i < 100; ++i)
+		//	t.insert(Tpoint(random_int(0, Graphics::ScreenWidth), random_int(0, Graphics::ScreenHeight)));
+
 		for (int i = 0; i < 100; ++i)
-			t.insert(Tpoint(random_int(0, Graphics::ScreenWidth), random_int(0, Graphics::ScreenHeight)));
+			t.insert(Tpoint(random_int(0, GMAXX), random_int(0, GMAXY)));
+	}
+
+	if (wnd.kbd.KeyIsPressed(VK_CONTROL))
+	{
+		for (int i = 0; i < 10000; ++i)
+			t.insert(Tpoint(random_int(0, GMAXX), random_int(0, GMAXY)));
 	}
 
 	if (wnd.kbd.KeyIsPressed(VK_UP))
@@ -468,22 +535,16 @@ void Game::UpdateModel()
 
 	if (wnd.kbd.KeyIsPressed(VK_DOWN))
 		draw_rect_bool = false;
-}
 
-Trect mr(Tpoint(100, 100), Tpoint(300, 300));
-Tpoint cl;
+	if (wnd.kbd.KeyIsPressed(VK_F5))
+		t.clear();
+}
 
 void Game::ComposeFrame()
 {
 	draw_quad_tree(gfx, t);
 	
 	draw_point(gfx, p, Colors::Green);
-	draw_point(gfx, closest, Colors::Red);
+	draw_point(gfx, closest, Colors::White);
 
-	//draw_rect(gfx, mr);
-	//Tpoint p(wnd.mouse.GetPosX(), wnd.mouse.GetPosY());
-	//cl = get_closest_p(mr, p);
-	//draw_point(gfx, p, Colors::Red);
-	//draw_point(gfx, cl, Colors::Blue);
-	
 }
