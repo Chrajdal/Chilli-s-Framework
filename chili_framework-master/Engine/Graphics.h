@@ -84,8 +84,8 @@ public:
 		int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 		dx = x2 - x1;
 		dy = y2 - y1;
-		dx1 = fabs(dx);
-		dy1 = fabs(dy);
+		dx1 = (int)fabs(dx);
+		dy1 = (int)fabs(dy);
 		px = 2 * dy1 - dx1;
 		py = 2 * dx1 - dy1;
 		if (dy1 <= dx1)

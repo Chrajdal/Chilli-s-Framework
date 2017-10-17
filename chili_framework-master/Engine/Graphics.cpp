@@ -304,7 +304,10 @@ void Graphics::EndFrame()
 void Graphics::BeginFrame()
 {
 	// clear the sysbuffer
-	memset( pSysBuffer,0u,sizeof( Color ) * Graphics::ScreenHeight * Graphics::ScreenWidth );
+	memset(pSysBuffer, 0u, sizeof(Color) * Graphics::ScreenHeight * Graphics::ScreenWidth);
+
+	// if you ever don't want black as background
+	//memset(pSysBuffer, Colors::LightGray.dword, sizeof(Color) * Graphics::ScreenHeight * Graphics::ScreenWidth);
 }
 
 void Graphics::PutPixel( int x,int y,Color c )
@@ -319,10 +322,10 @@ void Graphics::PutPixel( int x,int y,Color c )
 
 //////////////////////////////////////////////////
 //           Graphics Exception
-Graphics::Exception::Exception( HRESULT hr,const std::wstring& note,const wchar_t* file,unsigned int line )
+Graphics::Exception::Exception(HRESULT hr, const std::wstring& note, const wchar_t* file, unsigned int line)
 	:
-	ChiliException( file,line,note ),
-	hr( hr )
+	ChiliException(file, line, note),
+	hr(hr)
 {}
 
 std::wstring Graphics::Exception::GetFullMessage() const
@@ -332,25 +335,25 @@ std::wstring Graphics::Exception::GetFullMessage() const
 	const std::wstring errorDesc = GetErrorDescription();
 	const std::wstring& note = GetNote();
 	const std::wstring location = GetLocation();
-	return    (!errorName.empty() ? std::wstring( L"Error: " ) + errorName + L"\n"
+	return    (!errorName.empty() ? std::wstring(L"Error: ") + errorName + L"\n"
 		: empty)
-		+ (!errorDesc.empty() ? std::wstring( L"Description: " ) + errorDesc + L"\n"
+		+ (!errorDesc.empty() ? std::wstring(L"Description: ") + errorDesc + L"\n"
 			: empty)
-		+ (!note.empty() ? std::wstring( L"Note: " ) + note + L"\n"
+		+ (!note.empty() ? std::wstring(L"Note: ") + note + L"\n"
 			: empty)
-		+ (!location.empty() ? std::wstring( L"Location: " ) + location
+		+ (!location.empty() ? std::wstring(L"Location: ") + location
 			: empty);
 }
 
 std::wstring Graphics::Exception::GetErrorName() const
 {
-	return DXGetErrorString( hr );
+	return DXGetErrorString(hr);
 }
 
 std::wstring Graphics::Exception::GetErrorDescription() const
 {
-	std::array<wchar_t,512> wideDescription;
-	DXGetErrorDescription( hr,wideDescription.data(),wideDescription.size() );
+	std::array<wchar_t, 512> wideDescription;
+	DXGetErrorDescription(hr, wideDescription.data(), wideDescription.size());
 	return wideDescription.data();
 }
 

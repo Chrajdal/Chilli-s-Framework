@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include <list>
 #include <algorithm>
 #include <functional>
 #include <cassert>
@@ -75,8 +76,8 @@ double my_distance(const Tpoint & a, const Tpoint & b)
 }
 unsigned long long sq_distance(const Tpoint & a, const Tpoint & b)
 {
-	return (unsigned long long)(a.m_x - b.m_x) * (unsigned long long)(a.m_x - b.m_x)
-		 + (unsigned long long)(a.m_y - b.m_y) * (unsigned long long)(a.m_y - b.m_y);
+	return (unsigned long long)((a.m_x - b.m_x) * (a.m_x - b.m_x))
+		 + (unsigned long long)((a.m_y - b.m_y) * (a.m_y - b.m_y));
 }
 Tpoint get_closest_p(const Trect & rect, const Tpoint & p)
 {
@@ -279,28 +280,47 @@ public:
 		return closest;
 	}
 
-	vector<Tpoint> find_n_closest_points(const Tpoint & p, int n, unsigned long long max_dist, unsigned long long min_dist, const vector<Tpoint> & found) const
+	vector<Tpoint> find_n_closest_points(const Tpoint & p, int n, vector<Tpoint> & found) const
 	{
-		unsigned long long curr_dist = sq_distance(p, m_p);
-		//if(curr_dist < min_dist)
+		if (found.size() < n)
+		{
+			found.push_back(m_p);
+			sort(found.begin(), found.end(), [p](const Tpoint & a, const Tpoint & b) { return sq_distance(a, p) < sq_distance(b, p); });
+		}
+		else
+		{
+			unsigned long long curr_dist = sq_distance(p, m_p);
+			for (vector<Tpoint>::const_iterator it = found.begin(); it != found.end(); ++it)
+			{
+				if (curr_dist <= sq_distance(p, *it))
+				{
+					found.insert(it, m_p);
+					if (found.size() >= n)
+						found.pop_back();
+					break;
+				}
+			}
+		}
 
-		//if (best_dist > sq_distance(get_closest_p(m_downright_rect, p), p) && m_downright != NULL)
-		//	m_downright->find_closest_point(p, closest, best_dist);
 		if (m_ul != NULL)
 		{
-			unsigned long long curr_dist = sq_distance(get_closest_p(m_ul_r, p), p);
+			if (sq_distance(get_closest_p(m_ul_r, p), p) < sq_distance(p, found.back()))
+				m_ul->find_n_closest_points(p, n, found);
 		}
 		if (m_ur != NULL)
 		{
-
+			if (sq_distance(get_closest_p(m_ur_r, p), p) < sq_distance(p, found.back()))
+				m_ur->find_n_closest_points(p, n, found);
 		}
 		if (m_dl != NULL)
 		{
-
+			if (sq_distance(get_closest_p(m_dl_r, p), p) < sq_distance(p, found.back()))
+				m_dl->find_n_closest_points(p, n, found);
 		}
 		if (m_dr != NULL)
 		{
-
+			if (sq_distance(get_closest_p(m_dr_r, p), p) < sq_distance(p, found.back()))
+				m_dr->find_n_closest_points(p, n, found);
 		}
 
 		return found;
@@ -308,10 +328,7 @@ public:
 
 	Tpoint m_p;
 	Trect m_ul_r, m_ur_r, m_dl_r, m_dr_r;
-	node * m_ul;
-	node * m_ur;
-	node * m_dl;
-	node * m_dr;
+	node * m_ul, * m_ur, * m_dl,* m_dr;
 };
 
 class quad_tree
@@ -380,9 +397,8 @@ class quad_tree
 			  return vector<Tpoint>();
 		  else
 		  {
-			  unsigned long long min_dist = 0, max_dist = 0;
 			  vector<Tpoint> res;
-			  return m_root->find_n_closest_points(m_root->m_p, n, min_dist, max_dist, res);
+			  return m_root->find_n_closest_points(p, n, res);
 		  }
 	  }
 public:
@@ -431,10 +447,10 @@ void draw_point(Graphics & gfx, const Tpoint & p, const Color & c = Colors::Whit
 		p.m_x < Graphics::ScreenWidth - 1 &&
 		p.m_y < Graphics::ScreenHeight - 1)
 	{
-		gfx.PutPixel(p.m_x - 1, p.m_y - 1, c);
-		gfx.PutPixel(p.m_x - 1, p.m_y + 1, c);
-		gfx.PutPixel(p.m_x + 1, p.m_y - 1, c);
-		gfx.PutPixel(p.m_x + 1, p.m_y + 1, c);
+		//gfx.PutPixel(p.m_x - 1, p.m_y - 1, c);
+		//gfx.PutPixel(p.m_x - 1, p.m_y + 1, c);
+		//gfx.PutPixel(p.m_x + 1, p.m_y - 1, c);
+		//gfx.PutPixel(p.m_x + 1, p.m_y + 1, c);
 		
 		gfx.PutPixel(p.m_x, p.m_y, c);
 	}
@@ -442,7 +458,7 @@ void draw_point(Graphics & gfx, const Tpoint & p, const Color & c = Colors::Whit
 
 bool draw_rect_bool = false;
 
-void draw_node(Graphics & gfx, const node const * n, int depth = 0)
+void draw_node(Graphics & gfx, const node * n, int depth = 0)
 {
 	if (n->m_ul != NULL) draw_node(gfx, n->m_ul, depth + 1);
 	if (n->m_ur != NULL) draw_node(gfx, n->m_ur, depth + 1);
@@ -457,6 +473,7 @@ void draw_node(Graphics & gfx, const node const * n, int depth = 0)
 		gfx.draw_line(n->m_p.m_x, n->m_p.m_y, n->m_dr_r.m_downright.m_x, n->m_p.m_y,                Colors::Red);
 	}
 	draw_point(gfx, n->m_p, color_palette[(depth % color_palette.size())]);
+	//draw_point(gfx, n->m_p, Colors::Gray);
 }
 
 void draw_quad_tree(Graphics & gfx, const quad_tree & t)
@@ -474,6 +491,7 @@ int random_int(int min, int max)
 quad_tree t;
 Tpoint p;
 Tpoint closest;
+vector<Tpoint> closest_points;
 
 Game::Game(MainWindow & wnd)
 	:
@@ -507,7 +525,8 @@ void Game::UpdateModel()
 	{
 		//p = Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1));
 		p = Tpoint(wnd.mouse.GetPosX(), wnd.mouse.GetPosY());
-		closest = t.find_closest_point(p);
+		//closest = t.find_closest_point(p);
+		closest_points = t.find_n_closest_points(p, 50);
 	}
 
 	if (wnd.mouse.RightIsPressed())
@@ -537,7 +556,10 @@ void Game::UpdateModel()
 		draw_rect_bool = false;
 
 	if (wnd.kbd.KeyIsPressed(VK_F5))
+	{
 		t.clear();
+		closest_points.clear();
+	}
 }
 
 void Game::ComposeFrame()
@@ -545,6 +567,7 @@ void Game::ComposeFrame()
 	draw_quad_tree(gfx, t);
 	
 	draw_point(gfx, p, Colors::Green);
-	draw_point(gfx, closest, Colors::White);
-
+	//draw_point(gfx, closest, Colors::White);
+	for (const auto & i : closest_points)
+		draw_point(gfx, i, Colors::Cyan);
 }
