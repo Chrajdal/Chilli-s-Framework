@@ -30,6 +30,11 @@ using namespace Colors;
 #define GMINX 0
 #define GMAXX (Graphics::ScreenWidth - 1)
 
+//#define GMINY -500000
+//#define GMAXY  500000
+//#define GMINX -500000
+//#define GMAXX  500000
+
 vector<Color> color_palette =
 {
 	Color(248,  12,  18),
@@ -53,20 +58,20 @@ vector<Color> color_palette =
 	Color(170, 204,  34),
 	Color(137, 206,  35),
 	Color(105, 208,  37),
-	Color( 69, 206, 103),
-	Color( 34, 204, 170),
-	Color( 26, 196, 177),
-	Color( 18, 189, 185),
-	Color( 18, 180, 186),
-	Color( 17, 170, 187),
-	Color( 42, 119, 204),
-	Color( 68,  68, 221),
-	Color( 59,  42, 204),
-	Color( 51,  17, 187),
-	Color( 55,  14, 188),
-	Color( 59,  12, 189),
-	Color( 63,  23, 171),
-	Color( 68,  34, 153)
+	Color(69, 206, 103),
+	Color(34, 204, 170),
+	Color(26, 196, 177),
+	Color(18, 189, 185),
+	Color(18, 180, 186),
+	Color(17, 170, 187),
+	Color(42, 119, 204),
+	Color(68,  68, 221),
+	Color(59,  42, 204),
+	Color(51,  17, 187),
+	Color(55,  14, 188),
+	Color(59,  12, 189),
+	Color(63,  23, 171),
+	Color(68,  34, 153)
 };
 
 double my_distance(const Tpoint & a, const Tpoint & b)
@@ -76,8 +81,8 @@ double my_distance(const Tpoint & a, const Tpoint & b)
 }
 unsigned long long sq_distance(const Tpoint & a, const Tpoint & b)
 {
-	return (unsigned long long)((a.m_x - b.m_x) * (a.m_x - b.m_x))
-		 + (unsigned long long)((a.m_y - b.m_y) * (a.m_y - b.m_y));
+	return (unsigned long long)((a.m_x - b.m_x) * (unsigned long long)(a.m_x - b.m_x))
+		+ (unsigned long long)((a.m_y - b.m_y) * (unsigned long long)(a.m_y - b.m_y));
 }
 Tpoint get_closest_p(const Trect & rect, const Tpoint & p)
 {
@@ -284,8 +289,13 @@ public:
 	{
 		if (found.size() < n)
 		{
-			found.push_back(m_p);
-			sort(found.begin(), found.end(), [p](const Tpoint & a, const Tpoint & b) { return sq_distance(a, p) < sq_distance(b, p); });
+			if (found.empty())
+				found.push_back(m_p);
+			else
+			{
+				auto it = lower_bound(found.begin(), found.end(), m_p, [p](const Tpoint & a, const Tpoint & b) { return sq_distance(a, p) <= sq_distance(b, p); });
+				found.insert(it, m_p);
+			}
 		}
 		else
 		{
@@ -303,32 +313,23 @@ public:
 		}
 
 		if (m_ul != NULL)
-		{
-			if (sq_distance(get_closest_p(m_ul_r, p), p) < sq_distance(p, found.back()))
+			if (sq_distance(get_closest_p(m_ul_r, p), p) <= sq_distance(p, found.back()))
 				m_ul->find_n_closest_points(p, n, found);
-		}
 		if (m_ur != NULL)
-		{
-			if (sq_distance(get_closest_p(m_ur_r, p), p) < sq_distance(p, found.back()))
+			if (sq_distance(get_closest_p(m_ur_r, p), p) <= sq_distance(p, found.back()))
 				m_ur->find_n_closest_points(p, n, found);
-		}
 		if (m_dl != NULL)
-		{
-			if (sq_distance(get_closest_p(m_dl_r, p), p) < sq_distance(p, found.back()))
+			if (sq_distance(get_closest_p(m_dl_r, p), p) <= sq_distance(p, found.back()))
 				m_dl->find_n_closest_points(p, n, found);
-		}
 		if (m_dr != NULL)
-		{
-			if (sq_distance(get_closest_p(m_dr_r, p), p) < sq_distance(p, found.back()))
+			if (sq_distance(get_closest_p(m_dr_r, p), p) <= sq_distance(p, found.back()))
 				m_dr->find_n_closest_points(p, n, found);
-		}
-
 		return found;
 	}
 
 	Tpoint m_p;
 	Trect m_ul_r, m_ur_r, m_dl_r, m_dr_r;
-	node * m_ul, * m_ur, * m_dl,* m_dr;
+	node * m_ul, *m_ur, *m_dl, *m_dr;
 };
 
 class quad_tree
@@ -443,9 +444,9 @@ void draw_rect(Graphics & gfx, const Trect & rect, const Color & c = Colors::Cya
 
 void draw_point(Graphics & gfx, const Tpoint & p, const Color & c = Colors::White)
 {
-	if (p.m_x > 1 && p.m_y > 1 &&
-		p.m_x < Graphics::ScreenWidth - 1 &&
-		p.m_y < Graphics::ScreenHeight - 1)
+	if (p.m_x >= 0 && p.m_y >= 0 &&
+		p.m_x < Graphics::ScreenWidth &&
+		p.m_y < Graphics::ScreenHeight)
 	{
 		//gfx.PutPixel(p.m_x - 1, p.m_y - 1, c);
 		//gfx.PutPixel(p.m_x - 1, p.m_y + 1, c);
@@ -460,10 +461,22 @@ bool draw_rect_bool = false;
 
 void draw_node(Graphics & gfx, const node * n, int depth = 0)
 {
-	if (n->m_ul != NULL) draw_node(gfx, n->m_ul, depth + 1);
-	if (n->m_ur != NULL) draw_node(gfx, n->m_ur, depth + 1);
-	if (n->m_dl != NULL) draw_node(gfx, n->m_dl, depth + 1);
-	if (n->m_dr != NULL) draw_node(gfx, n->m_dr, depth + 1);
+	if (n->m_ul != NULL)
+	{
+		draw_node(gfx, n->m_ul, depth + 1);
+	}
+	if (n->m_ur != NULL)
+	{
+		draw_node(gfx, n->m_ur, depth + 1);
+	}
+	if (n->m_dl != NULL)
+	{
+		draw_node(gfx, n->m_dl, depth + 1);
+	}
+	if (n->m_dr != NULL)
+	{
+		draw_node(gfx, n->m_dr, depth + 1);
+	}
 
 	if (draw_rect_bool == true)
 	{
@@ -500,9 +513,6 @@ Game::Game(MainWindow & wnd)
 {
 	srand(unsigned(time(0)));
 
-	//for (int i = 0; i < 100; ++i)
-	//	t.insert(Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1)));
-
 	p = Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1));
 	closest = t.find_closest_point(p);
 }
@@ -523,10 +533,8 @@ void Game::UpdateModel()
 {
 	if (wnd.mouse.LeftIsPressed())
 	{
-		//p = Tpoint(random_int(0, Graphics::ScreenWidth - 1), random_int(0, Graphics::ScreenHeight - 1));
 		p = Tpoint(wnd.mouse.GetPosX(), wnd.mouse.GetPosY());
-		//closest = t.find_closest_point(p);
-		closest_points = t.find_n_closest_points(p, 50);
+		closest_points = t.find_n_closest_points(p, 500);
 	}
 
 	if (wnd.mouse.RightIsPressed())
@@ -536,9 +544,6 @@ void Game::UpdateModel()
 
 	if (wnd.kbd.KeyIsPressed(VK_SPACE))
 	{
-		//for (int i = 0; i < 100; ++i)
-		//	t.insert(Tpoint(random_int(0, Graphics::ScreenWidth), random_int(0, Graphics::ScreenHeight)));
-
 		for (int i = 0; i < 100; ++i)
 			t.insert(Tpoint(random_int(0, GMAXX), random_int(0, GMAXY)));
 	}
@@ -559,15 +564,14 @@ void Game::UpdateModel()
 	{
 		t.clear();
 		closest_points.clear();
+		p = Tpoint(-1, -1);
 	}
 }
 
 void Game::ComposeFrame()
 {
 	draw_quad_tree(gfx, t);
-	
 	draw_point(gfx, p, Colors::Green);
-	//draw_point(gfx, closest, Colors::White);
 	for (const auto & i : closest_points)
-		draw_point(gfx, i, Colors::Cyan);
+		draw_point(gfx, i, Colors::Magenta);
 }
