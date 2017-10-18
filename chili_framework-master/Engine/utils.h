@@ -1,0 +1,92 @@
+#pragma once
+
+#include <algorithm>
+#include <chrono>
+using namespace std;
+using namespace std::chrono;
+
+//-----------------------------------------------------------------------------
+template<typename T>
+struct Tpoint
+{
+	Tpoint(const T & _x = 0, const T & _y = 0)
+		: m_x(_x), m_y(_y)
+	{}
+	Tpoint(const Tpoint<T> & src)
+		: m_x(src.m_x), m_y(src.m_y)
+	{}
+	Tpoint(const Tpoint<T> && src)
+		: m_x(move(src.m_x)), m_y(move(src.m_y))
+	{}
+	Tpoint<T> & operator = (const Tpoint<T> & src)
+	{
+		if (this == &src)
+			return *this;
+		m_x = src.m_x;
+		m_y = src.m_y;
+		return *this;
+	}
+	Tpoint<T> & operator = (const Tpoint<T> && src)
+	{
+		if (this == &src)
+			return *this;
+		m_x = move(src.m_x);
+		m_y = move(src.m_y);
+		return *this;
+	}
+	T m_x;
+	T m_y;
+};
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+template<typename T>
+struct Trect
+{
+	Trect(const Tpoint<T> & upleft = {}, const Tpoint<T> & downright = {})
+		: m_upleft(upleft), m_downright(downright)
+	{}
+	Trect(const Trect<T> & src)
+		: m_upleft(src.m_upleft), m_downright(src.m_downright)
+	{}
+	Trect(const Trect<T> && src)
+		: m_upleft(move(src.m_upleft)), m_downright(move(src.m_downright))
+	{}
+	Trect<T> & operator = (const Trect<T> & src)
+	{
+		if (this == &src)
+			return *this;
+		m_upleft = src.m_upleft;
+		m_downright = src.m_downright;
+		return *this;
+	}
+	Trect<T> & operator = (const Trect<T> && src)
+	{
+		if (this == &src)
+			return *this;
+		m_upleft = move(src.m_upleft);
+		m_downright = move(src.m_downright);
+		return *this;
+	}
+	Tpoint<T> m_upleft;
+	Tpoint<T> m_downright;
+};
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+class CTimer
+{
+public:
+	CTimer(void)
+	{
+		start = chrono::system_clock::now();
+	}
+	double elapsed(void) const
+	{
+		return (double)(chrono::duration_cast<chrono::milliseconds>
+			(chrono::system_clock::now() - start)).count();
+	}
+private:
+	chrono::time_point<chrono::system_clock> start;
+};
+//-----------------------------------------------------------------------------

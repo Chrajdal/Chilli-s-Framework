@@ -1,64 +1,30 @@
 #pragma once
-
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <iomanip>
+#include <cmath>
+#include <sstream>
+#include <vector>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <functional>
+#include <cassert>
+#include <cstdlib>
+#include <chrono>
+#include <cassert>
+#include <sstream>
+#include <ctime>
+#include <numeric>
+#include <thread>
+#include <mutex>
+#include <fstream>
+#include "MainWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
-
-struct Tpoint
-{
-	Tpoint(int _x = 0, int _y = 0)
-		: m_x(_x), m_y(_y)
-	{}
-
-	Tpoint(const Tpoint & src)
-		: m_x(src.m_x), m_y(src.m_y)
-	{}
-
-	Tpoint & operator = (const Tpoint & src)
-	{
-		if (this == &src)
-			return *this;
-		m_x = src.m_x;
-		m_y = src.m_y;
-		return *this;
-	}
-
-	//friend ostream & operator << (ostream & os, const Tpoint & src)
-	//{
-	//	return os << src.m_x << ", " << src.m_y;
-	//}
-
-	int m_x;
-	int m_y;
-};
-
-struct Trect
-{
-	Trect(const Tpoint & upleft = {}, const Tpoint & downright = {})
-		: m_upleft(upleft), m_downright(downright)
-	{}
-
-	Trect(const Trect & src)
-		: m_upleft(src.m_upleft), m_downright(src.m_downright)
-	{}
-
-	Trect & operator = (const Trect & src)
-	{
-		if (this == &src)
-			return *this;
-		m_upleft = src.m_upleft;
-		m_downright = src.m_downright;
-		return *this;
-	}
-
-	//friend ostream & operator << (ostream & os, const Trect & src)
-	//{
-	//	return os << "(" << src.m_upleft << ") -> (" << src.m_downright << ")";
-	//}
-
-	Tpoint m_upleft;
-	Tpoint m_downright;
-};
+#include "quad_tree.h"
 
 class Game
 {
