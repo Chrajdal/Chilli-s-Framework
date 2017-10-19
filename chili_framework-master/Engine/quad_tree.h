@@ -67,7 +67,7 @@ public:
 	vector<Tpoint<float>> find_n_closest_points(const Tpoint<float> & p, int n, vector<Tpoint<float>> & found) const;
 public:
 	Tpoint<float> m_p;
-	_Vec2<float> velocity;
+	_Vec2<float> m_velocity;
 	Trect<float> m_ul_r, m_ur_r, m_dl_r, m_dr_r;
 	node_f * m_ul, *m_ur, *m_dl, *m_dr;
 };

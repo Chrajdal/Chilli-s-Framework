@@ -1,4 +1,5 @@
 #pragma once
+#pragma optimize( "", off )
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -24,7 +25,6 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
-#include "quad_tree.h"
 
 class Game
 {
