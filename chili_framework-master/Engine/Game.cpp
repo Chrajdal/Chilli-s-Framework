@@ -117,6 +117,15 @@ void draw_node(Graphics & gfx, const node * n, int depth = 0)
 	draw_point(gfx, n->m_p, color_palette[(depth % color_palette.size())]);
 	//draw_point(gfx, n->m_p, Colors::Gray);
 }
+void draw_node(Graphics & gfx, const node_f * n)
+{
+	if (n->m_ul != NULL) draw_node(gfx, n->m_ul);
+	if (n->m_ur != NULL) draw_node(gfx, n->m_ur);
+	if (n->m_dl != NULL) draw_node(gfx, n->m_dl);
+	if (n->m_dr != NULL) draw_node(gfx, n->m_dr);
+
+	draw_point(gfx, n->m_p, Colors::Gray);
+}
 
 void draw_quad_tree(Graphics & gfx, const quad_tree & t)
 {
@@ -131,21 +140,23 @@ void draw_node(Graphics & gfx, const node_f & n)
 		gfx.draw_line((int)n.m_p.m_x, (int)n.m_p.m_y, (int)n.m_p.m_x + (int)n.m_velocity.x, (int)n.m_p.m_y + (int)n.m_velocity.y, Colors::Blue);
 }
 
-void update_node_f(node_f & n)
-{
-	n.m_velocity *= 1.01;
-	n.m_p.m_x += n.m_velocity.x;
-	n.m_p.m_y += n.m_velocity.y;
-	if (n.m_p.m_x - fabs(n.m_velocity.x) < 0)
-		n.m_velocity.x = fabs(n.m_velocity.x);
-	if (n.m_p.m_x + fabs(n.m_velocity.x) >= Graphics::ScreenWidth - 1)
-		n.m_velocity.x = -fabs(n.m_velocity.x);
-	if (n.m_p.m_y - fabs(n.m_velocity.y) < 0)
-		n.m_velocity.y = fabs(n.m_velocity.y);
-	if (n.m_p.m_y + fabs(n.m_velocity.y) >= Graphics::ScreenHeight - 1)
-		n.m_velocity.y = -fabs(n.m_velocity.y);
-}
+//void update_node_f(node_f & n)
+//{
+//	n.m_velocity *= 1.01;
+//	n.m_p.m_x += n.m_velocity.x;
+//	n.m_p.m_y += n.m_velocity.y;
+//	if (n.m_p.m_x - fabs(n.m_velocity.x) < 0)
+//		n.m_velocity.x = fabs(n.m_velocity.x);
+//	if (n.m_p.m_x + fabs(n.m_velocity.x) >= Graphics::ScreenWidth - 1)
+//		n.m_velocity.x = -fabs(n.m_velocity.x);
+//	if (n.m_p.m_y - fabs(n.m_velocity.y) < 0)
+//		n.m_velocity.y = fabs(n.m_velocity.y);
+//	if (n.m_p.m_y + fabs(n.m_velocity.y) >= Graphics::ScreenHeight - 1)
+//		n.m_velocity.y = -fabs(n.m_velocity.y);
+//}
 
+quad_tree_f t;
+quad_tree_f u;
 vector<node_f> vec;
 //          ^ point       ^ velocity
 
@@ -158,7 +169,6 @@ _Vec2<float> update_alignment(const vector<node_f> & closest_points, node_f & n)
 
 	return (sum.GetNormalized() - n.m_velocity).GetNormalized();
 }
-
 _Vec2<float> update_separation(const vector<node_f> & closest_points, node_f & n)
 {
 	_Vec2<float> v{ 0,0 };
@@ -177,7 +187,6 @@ _Vec2<float> update_separation(const vector<node_f> & closest_points, node_f & n
 
 	return v.GetNormalized();
 }
-
 _Vec2<float> update_cohesion(const vector<node_f> & closest_points, node_f & n)
 {
 	_Vec2<float> v { 0,0 };
@@ -203,7 +212,7 @@ void update_vec(vector<node_f> & v)
 	for (vector<node_f>::iterator i = v.begin(); i != v.end(); ++i)
 	{
 		Tpoint<float> p = i->m_p;
-		// = v;
+		//w = v;
 		//sort(w.begin(), w.end(), [p](const node_f & a, node_f & b) { return sq_distance(a.m_p, p) <= sq_distance(b.m_p, p); });
 		int number_of_neighbours = 20;
 		vector<node_f> w;
@@ -251,7 +260,6 @@ void update_vec(vector<node_f> & v)
 	}
 	v = tmp;
 }
-
 void draw_vec(Graphics & gfx, const vector<node_f> & v)
 {
 	for (const auto & n : v)
@@ -265,6 +273,47 @@ void draw_vec(Graphics & gfx, const vector<node_f> & v)
 	}
 }
 
+void update_node_f(quad_tree_f & t, node_f & n, quad_tree_f & nt)
+{
+	//vector<node_f> closest_points = t.find_n_closest_points(n.m_p, 10);
+
+	// alignment
+	//_Vec2<float> alignment = update_alignment(closest_points, *i);
+	// separation
+	//_Vec2<float> separation = update_separation(closest_points, *i);
+	// cohesion
+	//_Vec2<float> cohesion = update_cohesion(closest_points, *i);
+
+	//node_f x = *i;
+	//x.m_velocity += alignment * alignment_weight + separation * separation_weight + cohesion * cohesion_weight;
+	n.m_velocity = n.m_velocity.Normalize() * 5.0f;
+	n.m_p.m_x += n.m_velocity.x;
+	n.m_p.m_y += n.m_velocity.y;
+
+	if (n.m_p.m_x >= Graphics::ScreenWidth)
+		n.m_p.m_x = float((int)(n.m_p.m_x) % Graphics::ScreenWidth);
+	if (n.m_p.m_x < 0)
+		n.m_p.m_x += (float)Graphics::ScreenWidth;
+	if (n.m_p.m_y >= Graphics::ScreenHeight)
+		n.m_p.m_y = float((int)(n.m_p.m_y) % Graphics::ScreenHeight);
+	if (n.m_p.m_y < 0)
+		n.m_p.m_y += (float)Graphics::ScreenHeight;
+
+	nt.insert(n);
+}
+void update_quad_tree_f(quad_tree_f & t)
+{
+	quad_tree_f nt;
+	if (t.m_root != NULL)
+		update_node_f(t, *t.m_root, nt);
+	t = nt;
+}
+void draw_quad_tree_f(Graphics & gfx, const quad_tree_f & t)
+{
+	if (t.m_root != NULL)
+		draw_node(gfx, t.m_root);
+}
+
 int vec_size = 100;
 
 Game::Game(MainWindow & wnd)
@@ -274,12 +323,18 @@ Game::Game(MainWindow & wnd)
 {
 	srand(unsigned(time(0)));
 
-	for (int i = 0; i < vec_size; ++i)
+	//for (int i = 0; i < vec_size; ++i)
+	//{
+	//	node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+	//	//node_f x({ float(400 + rand() % 50 - 25), float(400 + rand() % 50 - 25) });
+	//	x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+	//	vec.push_back(x);
+	//}
+
+	for (int i = 0; i < 10; ++i)
 	{
-		node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-		//node_f x({ float(400 + rand() % 50 - 25), float(400 + rand() % 50 - 25) });
-		x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-		vec.push_back(x);
+		t.insert(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1));
+		u.insert(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1));
 	}
 }
 
@@ -296,51 +351,50 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-	update_vec(vec);
+	update_quad_tree_f(t);
 
-	if (wnd.kbd.KeyIsPressed(VK_F5))
-	{
-		vec.clear();
-		for (int i = 0; i < vec_size; ++i)
-		{
-			node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-			x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-			vec.push_back(x);
-		}
-	}
-
-	if (wnd.kbd.KeyIsPressed(VK_UP))
-	{
-		node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-		x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-		vec.push_back(x);
-		vec_size++;
-
-		if (wnd.kbd.KeyIsPressed(VK_CONTROL))
-		{
-			for (int i = 0; i < 10; ++i)
-			{
-				node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-				x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-				vec.push_back(x);
-				vec_size++;
-			}
-		}
-
-	}
-	if (wnd.kbd.KeyIsPressed(VK_DOWN))
-	{
-		if (!vec.empty())
-			vec.pop_back();
-		//node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-		//x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-		//vec.push_back(x);
-		if (vec_size > 1)
-			vec_size--;
-	}
+	//update_vec(vec);
+	//if (wnd.kbd.KeyIsPressed(VK_F5))
+	//{
+	//	vec.clear();
+	//	for (int i = 0; i < vec_size; ++i)
+	//	{
+	//		node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+	//		x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+	//		vec.push_back(x);
+	//	}
+	//}
+	//if (wnd.kbd.KeyIsPressed(VK_UP))
+	//{
+	//	node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+	//	x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+	//	vec.push_back(x);
+	//	vec_size++;
+	//	if (wnd.kbd.KeyIsPressed(VK_CONTROL))
+	//	{
+	//		for (int i = 0; i < 10; ++i)
+	//		{
+	//			node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+	//			x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+	//			vec.push_back(x);
+	//			vec_size++;
+	//		}
+	//	}
+	//
+	//}
+	//if (wnd.kbd.KeyIsPressed(VK_DOWN))
+	//{
+	//	if (!vec.empty())
+	//		vec.pop_back();
+	//	//node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+	//	//x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+	//	//vec.push_back(x);
+	//	if (vec_size > 1)
+	//		vec_size--;
+	//}
 }
 
 void Game::ComposeFrame()
 {
-	draw_vec(gfx, vec);
+	draw_quad_tree_f(gfx, t);
 }

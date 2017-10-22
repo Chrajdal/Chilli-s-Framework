@@ -61,10 +61,13 @@ public:
 		const Trect<float> m_upright_rect = {},
 		const Trect<float> m_downleft_rect = {},
 		const Trect<float> m_downright_rect = {});
+	node_f(const node_f & src);
+	node_f & operator=(const node_f & src);
 	~node_f(void);
 	void insert(const Tpoint<float> & p, const node_f * parent);
+	void insert(const node_f & p, const node_f * parent);
 	Tpoint<float> find_closest_point(const Tpoint<float> & p, Tpoint<float> & closest, double & best_dist) const;
-	vector<Tpoint<float>> find_n_closest_points(const Tpoint<float> & p, int n, vector<Tpoint<float>> & found) const;
+	vector<node_f> find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & found) const;
 public:
 	Tpoint<float> m_p;
 	_Vec2<float> m_velocity;
@@ -87,5 +90,25 @@ public:
 	vector<Tpoint<int>> find_n_closest_points(const Tpoint<int> & p, int n);
 public:
 	node * m_root;
+};
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+class quad_tree_f
+{
+public:
+	quad_tree_f(void);
+	quad_tree_f(const quad_tree_f & src);
+	quad_tree_f & operator = (const quad_tree_f & src);
+	~quad_tree_f(void);
+
+	void insert(float x, float y);
+	void insert(const Tpoint<float> & p);
+	void insert(const node_f & n);
+	void clear(void);
+	Tpoint<float> find_closest_point(const Tpoint<float> & p) const;
+	vector<node_f> find_n_closest_points(const Tpoint<float> & p, int n);
+public:
+	node_f * m_root;
 };
 //-----------------------------------------------------------------------------
