@@ -73,10 +73,10 @@ private:
 	D3D11_MAPPED_SUBRESOURCE							mappedSysBufferTexture;
 	Color*                                              pSysBuffer = nullptr;
 public:
-	static constexpr int ScreenWidth  = 900;
-	static constexpr int ScreenHeight = 900;
+	static constexpr int ScreenWidth  = 1000;
+	static constexpr int ScreenHeight = 1000;
 
-	// my own functions
+	// my own functions:
 	
 	// Bresenham's line algorithm
 	void draw_line(int x1, int y1, int x2, int y2, const Color & c)

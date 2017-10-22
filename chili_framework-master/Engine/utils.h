@@ -34,6 +34,14 @@ struct Tpoint
 		m_y = move(src.m_y);
 		return *this;
 	}
+	inline bool operator == (const Tpoint<T> & rhs) const
+	{
+		return m_x == rhs.m_x && m_y == rhs.m_y;
+	}
+	inline bool operator != (const Tpoint<T> & rhs) const
+	{
+		return !(*this == rhs);
+	}
 	T m_x;
 	T m_y;
 };

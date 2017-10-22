@@ -128,7 +128,7 @@ void draw_node(Graphics & gfx, const node_f & n)
 {
 	if (n.m_p.m_x + n.m_velocity.x > 0 && n.m_p.m_x + n.m_velocity.x < Graphics::ScreenWidth - 1 &&
 		n.m_p.m_y + n.m_velocity.y > 0 && n.m_p.m_y + n.m_velocity.y < Graphics::ScreenHeight - 1)
-		gfx.draw_line((int)n.m_p.m_x, (int)n.m_p.m_y, (int)n.m_p.m_x + (int)n.m_velocity.x, (int)n.m_p.m_y + (int)n.m_velocity.y, Colors::White);
+		gfx.draw_line((int)n.m_p.m_x, (int)n.m_p.m_y, (int)n.m_p.m_x + (int)n.m_velocity.x, (int)n.m_p.m_y + (int)n.m_velocity.y, Colors::Blue);
 }
 
 void update_node_f(node_f & n)
@@ -149,68 +149,107 @@ void update_node_f(node_f & n)
 vector<node_f> vec;
 //          ^ point       ^ velocity
 
-void update_alignment(const vector<node_f> & closest_points, node_f & n)
+_Vec2<float> update_alignment(const vector<node_f> & closest_points, node_f & n)
 {
-	_Vec2<float> sum(0, 0);
+	_Vec2<float> sum{ 0,0 };
 	for (const auto & i : closest_points)
 		sum += i.m_velocity;
-
 	sum /= (float)closest_points.size();
-	sum.Normalize();
 
-	_Vec2<float> steer = sum - n.m_velocity;
-	float steer_weight = 1.01f;
-	n.m_velocity = steer * steer_weight;
+	return (sum.GetNormalized() - n.m_velocity).GetNormalized();
+}
 
-	float magnitude = n.m_velocity.LenSq();
-	if (magnitude > 100) {
-		n.m_velocity = n.m_velocity / magnitude;
+_Vec2<float> update_separation(const vector<node_f> & closest_points, node_f & n)
+{
+	_Vec2<float> v{ 0,0 };
+
+	for (const auto & i : closest_points)
+	{
+		if (i.m_p != n.m_p)
+		{
+			v.x += i.m_p.m_x - n.m_p.m_x;
+			v.y += i.m_p.m_y - n.m_p.m_y;
+		}
 	}
-	n.m_p.m_x += n.m_velocity.x;
-	n.m_p.m_y += n.m_velocity.y;
+
+	v.x *= -1;
+	v.y *= -1;
+
+	return v.GetNormalized();
 }
 
-void update_separation(const vector<node_f> & closest_points, node_f & n)
+_Vec2<float> update_cohesion(const vector<node_f> & closest_points, node_f & n)
 {
+	_Vec2<float> v { 0,0 };
 
-}
+	for (const auto & i : closest_points)
+	{
+		if (i.m_p != n.m_p)
+		{
+			v.x += i.m_p.m_x;
+			v.y += i.m_p.m_y;
+		}
+	}
 
-void update_cohesion(const vector<node_f> & closest_points, node_f & n)
-{
+	v.x /= closest_points.size() - 1;
+	v.y /= closest_points.size() - 1;
 
+	return v.GetNormalized();
 }
 
 void update_vec(vector<node_f> & v)
 {
+	vector<node_f> tmp;
 	for (vector<node_f>::iterator i = v.begin(); i != v.end(); ++i)
 	{
-		vector<node_f> w = v;
 		Tpoint<float> p = i->m_p;
-		sort(w.begin(), w.end(), [p](const node_f & a, node_f & b) { return sq_distance(a.m_p, p) <= sq_distance(b.m_p, p); });
-		vector<node_f> closest_points = vector<node_f>(w.begin(), w.begin() + w.size() / 50 + 1);
+		// = v;
+		//sort(w.begin(), w.end(), [p](const node_f & a, node_f & b) { return sq_distance(a.m_p, p) <= sq_distance(b.m_p, p); });
+		int number_of_neighbours = 20;
+		vector<node_f> w;
+		for (vector<node_f>::iterator j = v.begin(); j != v.end(); ++j)
+		{
+			if (w.empty())
+				w.push_back(*j);
+			else
+			{
+				auto it = lower_bound(w.begin(), w.end(), *j,
+					[p](const node_f & a, const node_f & b) { return sq_distance(a.m_p, p) <= sq_distance(b.m_p, p); });
+				w.insert(it, *j);
+			}
+		}
+		
+		vector<node_f> closest_points = vector<node_f>(w.begin(), w.begin() + number_of_neighbours);
 
 		// alignment
-		update_alignment(closest_points, *i);
-
+		_Vec2<float> alignment = update_alignment(closest_points, *i);
 		// separation
-		update_separation(closest_points, *i);
-
+		_Vec2<float> separation = update_separation(closest_points, *i);
 		// cohesion
-		update_cohesion(closest_points, *i);
+		_Vec2<float> cohesion = update_cohesion(closest_points, *i);
 
+		float alignment_weight  = 15.0f;
+		float separation_weight = 15.0f;
+		float cohesion_weight = 15.0f;
+	
+		node_f x = *i;
+		x.m_velocity += alignment * alignment_weight + separation * separation_weight + cohesion * cohesion_weight;
+		x.m_velocity.Normalize() * 500.0f;
+		x.m_p.m_x += x.m_velocity.x;
+		x.m_p.m_y += x.m_velocity.y;
 
-		if (i->m_p.m_x >= Graphics::ScreenWidth)
-			i->m_p.m_x = float((int)(i->m_p.m_x) % Graphics::ScreenWidth);
+		if (x.m_p.m_x >= Graphics::ScreenWidth)
+			x.m_p.m_x = float((int)(x.m_p.m_x) % Graphics::ScreenWidth);
+		if (x.m_p.m_x < 0)
+			x.m_p.m_x += (float)Graphics::ScreenWidth;
+		if (x.m_p.m_y >= Graphics::ScreenHeight)
+			x.m_p.m_y = float((int)(x.m_p.m_y) % Graphics::ScreenHeight);
+		if (x.m_p.m_y < 0)
+			x.m_p.m_y += (float)Graphics::ScreenHeight;
 
-		if (i->m_p.m_x < 0)
-			i->m_p.m_x += (float)Graphics::ScreenWidth;
-
-		if (i->m_p.m_y >= Graphics::ScreenHeight)
-			i->m_p.m_y = float((int)(i->m_p.m_y) % Graphics::ScreenHeight);
-
-		if (i->m_p.m_y < 0)
-			i->m_p.m_y += (float)Graphics::ScreenHeight;
+		tmp.push_back(x);
 	}
+	v = tmp;
 }
 
 void draw_vec(Graphics & gfx, const vector<node_f> & v)
@@ -219,12 +258,14 @@ void draw_vec(Graphics & gfx, const vector<node_f> & v)
 	{
 		if (n.m_p.m_x + n.m_velocity.x > 0 && n.m_p.m_x + n.m_velocity.x < Graphics::ScreenWidth - 1 &&
 			n.m_p.m_y + n.m_velocity.y > 0 && n.m_p.m_y + n.m_velocity.y < Graphics::ScreenHeight - 1)
-			//gfx.draw_line((int)n.m_p.m_x, (int)n.m_p.m_y, (int)n.m_p.m_x + (int)n.m_velocity.x, (int)n.m_p.m_y + (int)n.m_velocity.y, Colors::White);
-			draw_point(gfx, n.m_p);
+		{
+			gfx.draw_line((int)n.m_p.m_x, (int)n.m_p.m_y, (int)n.m_p.m_x + (int)n.m_velocity.x, (int)n.m_p.m_y + (int)n.m_velocity.y, Colors::Blue);
+			draw_point(gfx, n.m_p, Colors::Red);
+		}
 	}
 }
 
-int vec_size = 200;
+int vec_size = 100;
 
 Game::Game(MainWindow & wnd)
 	:
@@ -236,6 +277,7 @@ Game::Game(MainWindow & wnd)
 	for (int i = 0; i < vec_size; ++i)
 	{
 		node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+		//node_f x({ float(400 + rand() % 50 - 25), float(400 + rand() % 50 - 25) });
 		x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
 		vec.push_back(x);
 	}
@@ -269,25 +311,32 @@ void Game::UpdateModel()
 
 	if (wnd.kbd.KeyIsPressed(VK_UP))
 	{
-		vec_size += 10;
-		vec.clear();
-		for (int i = 0; i < vec_size; ++i)
+		node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+		x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+		vec.push_back(x);
+		vec_size++;
+
+		if (wnd.kbd.KeyIsPressed(VK_CONTROL))
 		{
-			node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-			x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-			vec.push_back(x);
+			for (int i = 0; i < 10; ++i)
+			{
+				node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+				x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+				vec.push_back(x);
+				vec_size++;
+			}
 		}
+
 	}
 	if (wnd.kbd.KeyIsPressed(VK_DOWN))
 	{
-		vec_size -= 10;
-		vec.clear();
-		for (int i = 0; i < vec_size; ++i)
-		{
-			node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-			x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-			vec.push_back(x);
-		}
+		if (!vec.empty())
+			vec.pop_back();
+		//node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
+		//x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+		//vec.push_back(x);
+		if (vec_size > 1)
+			vec_size--;
 	}
 }
 
