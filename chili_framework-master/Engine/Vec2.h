@@ -61,9 +61,6 @@ public:
 		:
 		_Vec2(vect.x, vect.y)
 	{}
-	_Vec2(const _Vec2 && vect)
-		: x(std::move(vect.x)), y(std::move(vect.y))
-	{}
 	template <typename T2>
 	explicit operator _Vec2<T2>() const
 	{
@@ -98,12 +95,6 @@ public:
 	{
 		x = rhs.x;
 		y = rhs.y;
-		return *this;
-	}
-	_Vec2&	operator=(const _Vec2 &&rhs)
-	{
-		x = std::move(rhs.x);
-		y = std::move(rhs.y);
 		return *this;
 	}
 	_Vec2&	operator+=(const _Vec2 &rhs)

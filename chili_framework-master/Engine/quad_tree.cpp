@@ -336,10 +336,10 @@ node_f & node_f::operator = (const node_f & src)
 
 node_f::~node_f(void)
 {
-	delete m_ul;
-	delete m_ur;
-	delete m_dl;
-	delete m_dr;
+	delete m_ul; m_ul = NULL;
+	delete m_ur; m_ur = NULL;
+	delete m_dl; m_dl = NULL;
+	delete m_dr; m_dr = NULL;
 }
 
 void node_f::insert(const Tpoint<float> & p, const node_f * parent)
@@ -454,7 +454,9 @@ void node_f::insert(const node_f & n, const node_f * parent)
 		{
 			if (m_ul == NULL)
 			{
-				m_ul = new node_f(n);
+				m_ul = new node_f(n.m_p);
+				m_ul->m_velocity = n.m_velocity;
+
 				float MIN_X = parent->m_ul_r.m_upleft.m_x;
 				float MID_X = n.m_p.m_x;
 				float MAX_X = parent->m_ul_r.m_downright.m_x;
@@ -476,7 +478,9 @@ void node_f::insert(const node_f & n, const node_f * parent)
 		{
 			if (m_ur == NULL)
 			{
-				m_ur = new node_f(n);
+				m_ur = new node_f(n.m_p);
+				m_ur->m_velocity = n.m_velocity;
+
 				float MIN_X = parent->m_ur_r.m_upleft.m_x;
 				float MID_X = n.m_p.m_x;
 				float MAX_X = parent->m_ur_r.m_downright.m_x;
@@ -501,7 +505,9 @@ void node_f::insert(const node_f & n, const node_f * parent)
 		{
 			if (m_dl == NULL)
 			{
-				m_dl = new node_f(n);
+				m_dl = new node_f(n.m_p);
+				m_dl->m_velocity = n.m_velocity;
+
 				float MIN_X = parent->m_dl_r.m_upleft.m_x;
 				float MID_X = n.m_p.m_x;
 				float MAX_X = parent->m_dl_r.m_downright.m_x;
@@ -523,7 +529,9 @@ void node_f::insert(const node_f & n, const node_f * parent)
 		{
 			if (m_dr == NULL)
 			{
-				m_dr = new node_f(n);
+				m_dr = new node_f(n.m_p);
+				m_dr->m_velocity = n.m_velocity;
+
 				float MIN_X = parent->m_dr_r.m_upleft.m_x;
 				float MID_X = n.m_p.m_x;
 				float MAX_X = parent->m_dr_r.m_downright.m_x;
@@ -698,8 +706,7 @@ quad_tree_f & quad_tree_f::operator = (const quad_tree_f & src)
 {
 	if (this == &src)
 		return *this;
-	delete m_root;
-	m_root = NULL;
+	clear();
 	if (src.m_root != NULL)
 		m_root = new node_f(*src.m_root);
 	return *this;
@@ -748,7 +755,9 @@ void quad_tree_f::insert(const node_f & n)
 
 	if (m_root == NULL)
 	{
-		m_root = new node_f(n);
+		m_root = new node_f(n.m_p);
+		m_root->m_velocity = n.m_velocity;
+
 		float MIN_X = GMINX;
 		float MID_X = n.m_p.m_x;
 		float MAX_X = GMAXX;
