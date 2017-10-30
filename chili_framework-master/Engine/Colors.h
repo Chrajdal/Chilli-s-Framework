@@ -20,6 +20,10 @@
 ******************************************************************************************/
 #pragma once
 
+#include <vector>
+
+using namespace std;
+
 class Color
 {
 public:
@@ -110,5 +114,3 @@ namespace Colors
 	static constexpr Color Cyan = MakeRGB(0u, 255u, 255u);
 	static constexpr Color Magenta = MakeRGB(255u, 0u, 255u);
 }
-
-

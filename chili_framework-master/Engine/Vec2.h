@@ -50,9 +50,7 @@ template <typename T>
 class _Vec2
 {
 public:
-	_Vec2()
-	{}
-	_Vec2(T x, T y)
+	_Vec2(const T & x = {}, const T & y = {})
 		:
 		x(x),
 		y(y)

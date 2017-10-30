@@ -115,6 +115,44 @@ node::~node(void)
 	delete m_dr;
 }
 
+node::node(const node & src)
+	: m_p(src.m_p),
+	m_ul_r(src.m_ul_r),
+	m_ur_r(src.m_ur_r),
+	m_dl_r(src.m_dl_r),
+	m_dr_r(src.m_dr_r),
+	m_ul(NULL), m_ur(NULL), m_dl(NULL), m_dr(NULL)
+{
+	if (src.m_ul != NULL) m_ul = new node(*src.m_ul);
+	if (src.m_ur != NULL) m_ur = new node(*src.m_ur);
+	if (src.m_dl != NULL) m_dl = new node(*src.m_dl);
+	if (src.m_dr != NULL) m_dr = new node(*src.m_dr);
+}
+
+node & node::operator = (const node & src)
+{
+	if (this == &src)
+		return *this;
+
+	m_p = src.m_p;
+	m_ul_r = src.m_ul_r;
+	m_ur_r = src.m_ur_r;
+	m_dl_r = src.m_dl_r;
+	m_dr_r = src.m_dr_r;
+
+	delete m_ul; m_ul = NULL;
+	delete m_ur; m_ur = NULL;
+	delete m_dl; m_dl = NULL;
+	delete m_dr; m_dr = NULL;
+
+	if (src.m_ul != NULL) m_ul = new node(*src.m_ul);
+	if (src.m_ur != NULL) m_ur = new node(*src.m_ur);
+	if (src.m_dl != NULL) m_dl = new node(*src.m_dl);
+	if (src.m_dr != NULL) m_dr = new node(*src.m_dr);
+
+	return *this;
+}
+
 void node::insert(const Tpoint<int> & p, const node * parent)
 {
 	if (m_p.m_x == p.m_x && m_p.m_y == p.m_y)
@@ -277,6 +315,22 @@ vector<Tpoint<int>> node::find_n_closest_points(const Tpoint<int> & p, int n, ve
 		if (sq_distance(get_closest_p(m_dr_r, p), p) <= sq_distance(p, found.back()))
 			m_dr->find_n_closest_points(p, n, found);
 	return found;
+}
+void node::draw(Graphics & gfx, bool draw_rect) const
+{
+	gfx.PutPixel(m_p.m_x, m_p.m_y, Colors::Gray);
+	if (draw_rect == true)
+	{
+		gfx.draw_line(m_p.m_x, m_p.m_y, m_p.m_x, m_ul_r.m_upleft.m_y, Colors::Green);
+		gfx.draw_line(m_p.m_x, m_p.m_y, m_p.m_x, m_dr_r.m_downright.m_y, Colors::Blue);
+		gfx.draw_line(m_p.m_x, m_p.m_y, m_ul_r.m_upleft.m_x, m_p.m_y, Colors::Yellow);
+		gfx.draw_line(m_p.m_x, m_p.m_y, m_dr_r.m_downright.m_x, m_p.m_y, Colors::Red);
+	}
+
+	if (m_ul != NULL) m_ul->draw(gfx, draw_rect);
+	if (m_ur != NULL) m_ur->draw(gfx, draw_rect);
+	if (m_dl != NULL) m_dl->draw(gfx, draw_rect);
+	if (m_dr != NULL) m_dr->draw(gfx, draw_rect);
 }
 //-----------------------------------------------------------------------------
 
@@ -628,6 +682,25 @@ quad_tree::~quad_tree(void)
 	delete m_root;
 }
 
+quad_tree::quad_tree(const quad_tree & src)
+{
+	if (src.m_root == NULL)
+		m_root = NULL;
+	else
+		m_root = new node(*src.m_root);
+}
+
+quad_tree & quad_tree::operator = (const quad_tree & src)
+{
+	if (this == &src)
+		return *this;
+	clear();
+	if (src.m_root != NULL)
+		m_root = new node(*src.m_root);
+	return *this;
+}
+
+
 void quad_tree::insert(int x, int y)
 {
 	insert(Tpoint<int>(x, y));
@@ -686,6 +759,10 @@ vector<Tpoint<int>> quad_tree::find_n_closest_points(const Tpoint<int> & p, int 
 		vector<Tpoint<int>> res;
 		return m_root->find_n_closest_points(p, n, res);
 	}
+}
+void quad_tree::draw(Graphics & gfx, bool draw_rect) const
+{
+	if (m_root != NULL) m_root->draw(gfx, draw_rect);
 }
 //-----------------------------------------------------------------------------
 
