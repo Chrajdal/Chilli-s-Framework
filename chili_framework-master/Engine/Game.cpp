@@ -1,8 +1,5 @@
 #include "Game.h"
 
-using std::vector;
-
-
 bool keep_updating = true;
 int vec_size = 100;
 bool draw_rect_bool = false;
@@ -96,7 +93,10 @@ _Vec2<float> update_cohesion(const vector<node_f> & closest_points, const node_f
 //-----------------------------------------------------------------------------
 void update_node_f(quad_tree_f & t, node_f & n, quad_tree_f & nt)
 {
-	vector<node_f> closest_points = t.find_n_closest_points(n.m_p, 5);
+	vector<node_f> closest_points;
+	closest_points.reserve(5);
+	t.find_n_closest_points(n.m_p, 5, closest_points);
+
 	_Vec2<float> alignment(0, 0), separation(0, 0), cohesion(0, 0);
 	alignment = update_alignment(closest_points, n);
 	separation = update_separation(closest_points, n);
@@ -145,9 +145,9 @@ void update_quad_tree_f(quad_tree_f & t)
 //-----------------------------------------------------------------------------
 void test_update_node(quad_tree_f & t, node_f & n, quad_tree_f & nt)
 {
-	vector<node_f> closest_points = t.find_n_closest_points(n.m_p, 20);
-	if (closest_points.size() <= 1)
-		return;
+	vector<node_f> closest_points;
+	closest_points.reserve(100);
+	t.find_n_closest_points(n.m_p, 100, closest_points);
 
 	_Vec2<float> alignment(0, 0);
 	_Vec2<float> separation(0, 0);

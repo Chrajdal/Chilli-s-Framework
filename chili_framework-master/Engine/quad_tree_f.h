@@ -21,7 +21,7 @@ public:
 	void insert(const node_f & n);
 	void clear(void);
 	Tpoint<float> find_closest_point(const Tpoint<float> & p) const;
-	vector<node_f> find_n_closest_points(const Tpoint<float> & p, int n);
+	void find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & out);
 	void draw(Graphics & gfx, bool draw_rect = false) const;
 public:
 	node_f * m_root;

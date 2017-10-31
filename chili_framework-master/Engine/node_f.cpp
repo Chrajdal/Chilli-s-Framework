@@ -349,7 +349,7 @@ Tpoint<float> node_f::find_closest_point(const Tpoint<float> & p, Tpoint<float> 
 	return closest;
 }
 
-vector<node_f> node_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & found) const
+void node_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & found) const
 {
 	if (found.size() < n)
 	{
@@ -390,7 +390,6 @@ vector<node_f> node_f::find_n_closest_points(const Tpoint<float> & p, int n, vec
 	if (m_dr != NULL)
 		if (sq_distance(get_closest_p(m_dr_r, p), p) <= sq_distance(p, found.back().m_p))
 			m_dr->find_n_closest_points(p, n, found);
-	return found;
 }
 
 void node_f::draw(Graphics & gfx, bool draw_rect) const

@@ -105,15 +105,10 @@ Tpoint<float> quad_tree_f::find_closest_point(const Tpoint<float> & p) const
 	}
 }
 
-vector<node_f> quad_tree_f::find_n_closest_points(const Tpoint<float> & p, int n)
+void quad_tree_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & out)
 {
-	if (m_root == NULL)
-		return vector<node_f>();
-	else
-	{
-		vector<node_f> res;
-		return m_root->find_n_closest_points(p, n, res);
-	}
+	if (m_root != NULL)
+		return m_root->find_n_closest_points(p, n, out);
 }
 
 void quad_tree_f::draw(Graphics & gfx, bool draw_rect) const
