@@ -4,8 +4,10 @@
 #include "Graphics.h"
 #include "Colors.h"
 #include "Vec2.h"
-#include "test.h"
 #include <vector>
+
+
+Tpoint<int> get_closest_p(const Trect<int> & rect, const Tpoint<int> & p);
 
 //-----------------------------------------------------------------------------
 class node

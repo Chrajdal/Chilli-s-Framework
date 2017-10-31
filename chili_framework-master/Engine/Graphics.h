@@ -4,6 +4,7 @@
 #include <wrl.h>
 #include "ChiliException.h"
 #include "Colors.h"
+#include "utils.h"
 
 #define GMINY 0
 #define GMAXY (Graphics::ScreenHeight - 1)

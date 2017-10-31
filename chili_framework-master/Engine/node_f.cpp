@@ -272,6 +272,62 @@ void node_f::insert(const node_f & n, const node_f * parent)
 	}
 }
 
+
+Tpoint<float> get_closest_p(const Trect<float> & rect, const Tpoint<float> & p)
+{
+	//  1 | 2 | 3
+	// ---+---+---
+	//  4 | 5 | 6
+	// ---+---+---
+	//  7 | 8 | 9
+
+	if (p.m_x < rect.m_upleft.m_x)
+	{
+		if (p.m_y < rect.m_upleft.m_y)
+		{	// no.: 1
+			return Tpoint<float>(rect.m_upleft);
+		}
+		else if (p.m_y > rect.m_downright.m_y)
+		{	// no.: 7
+			return Tpoint<float>(rect.m_upleft.m_x, rect.m_downright.m_y);
+		}
+		else
+		{	// no.: 4
+			return Tpoint<float>(rect.m_upleft.m_x, p.m_y);
+		}
+	}
+	else if (p.m_x > rect.m_downright.m_x)
+	{
+		if (p.m_y < rect.m_upleft.m_y)
+		{	// no.: 3
+			return Tpoint<float>(rect.m_downright.m_x, rect.m_upleft.m_y);
+		}
+		else if (p.m_y > rect.m_downright.m_y)
+		{	// no.: 9
+			return Tpoint<float>(rect.m_downright);
+		}
+		else
+		{	// no.: 6
+			return Tpoint<float>(rect.m_downright.m_x, p.m_y);
+		}
+	}
+	else
+	{
+		if (p.m_y < rect.m_upleft.m_y)
+		{	// no.: 2
+			return Tpoint<float>(p.m_x, rect.m_upleft.m_y);
+		}
+		else if (p.m_y > rect.m_downright.m_y)
+		{	// no.: 8
+			return Tpoint<float>(p.m_x, rect.m_downright.m_y);
+		}
+		else
+		{	// no.: 5
+			return p;
+		}
+	}
+}
+
 Tpoint<float> node_f::find_closest_point(const Tpoint<float> & p, Tpoint<float> & closest, double & best_dist) const
 {
 	double dist = sq_distance(p, m_p);
