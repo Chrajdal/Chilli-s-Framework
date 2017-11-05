@@ -408,4 +408,14 @@ void node_f::draw(Graphics & gfx, bool draw_rect) const
 	if (m_dl != NULL) m_dl->draw(gfx, draw_rect);
 	if (m_dr != NULL) m_dr->draw(gfx, draw_rect);
 }
+
+int node_f::size(int & sz) const
+{
+	sz++;
+	if (m_ul != NULL) m_ul->size(sz);
+	if (m_ur != NULL) m_ur->size(sz);
+	if (m_dl != NULL) m_dl->size(sz);
+	if (m_dr != NULL) m_dr->size(sz);
+	return sz;
+}
 //-----------------------------------------------------------------------------

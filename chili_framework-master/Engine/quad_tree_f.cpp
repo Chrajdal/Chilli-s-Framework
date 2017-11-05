@@ -35,8 +35,8 @@ void quad_tree_f::insert(float x, float y)
 
 void quad_tree_f::insert(const Tpoint<float> & p)
 {
-	if (p.m_x < GMINX || p.m_x >= GMAXX || p.m_y < GMINY || p.m_y >= GMAXY)
-		return;
+	//if (p.m_x < GMINX || p.m_x >= GMAXX || p.m_y < GMINY || p.m_y >= GMAXY)
+	//	return;
 
 	if (m_root == NULL)
 	{
@@ -61,7 +61,7 @@ void quad_tree_f::insert(const Tpoint<float> & p)
 
 void quad_tree_f::insert(const node_f & n)
 {
-	if (n.m_p.m_x < GMINX || n.m_p.m_x >= GMAXX || n.m_p.m_y < GMINY || n.m_p.m_y >= GMAXY)
+	if (n.m_p.m_x < GMINX || n.m_p.m_x > GMAXX || n.m_p.m_y < GMINY || n.m_p.m_y > GMAXY)
 		return;
 
 	if (m_root == NULL)
@@ -114,5 +114,16 @@ void quad_tree_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<n
 void quad_tree_f::draw(Graphics & gfx, bool draw_rect) const
 {
 	if (m_root != NULL) m_root->draw(gfx, draw_rect);
+}
+
+int quad_tree_f::size(void) const
+{
+	if (m_root == NULL)
+		return 0;
+	else
+	{
+		int sz = 1;
+		return m_root->size(sz);
+	}
 }
 //-----------------------------------------------------------------------------

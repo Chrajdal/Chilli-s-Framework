@@ -23,6 +23,10 @@ public:
 	Tpoint<float> find_closest_point(const Tpoint<float> & p) const;
 	void find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & out);
 	void draw(Graphics & gfx, bool draw_rect = false) const;
+
+	/**/
+	int size(void) const;
+	/**/
 public:
 	node_f * m_root;
 };
