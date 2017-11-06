@@ -18,16 +18,20 @@ public:
 		const Trect<float> m_downleft_rect = {},
 		const Trect<float> m_downright_rect = {});
 	node_f(const node_f & src);
-	node_f & operator=(const node_f & src);
+	node_f(const node_f && src);
+	node_f & operator = (const node_f & src);
+	node_f & operator = (const node_f && src);
 	~node_f(void);
 	void insert(const Tpoint<float> & p, const node_f * parent);
 	void insert(const node_f & p, const node_f * parent);
 	Tpoint<float> find_closest_point(const Tpoint<float> & p, Tpoint<float> & closest, double & best_dist) const;
 	void find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & found) const;
 	void draw(Graphics & gfx, bool draw_rect = false) const;
-
-
-	/**/
+	
+	/*
+	 * only temporary 
+	 * complexity: O(n)
+	 */
 	int size(int & sz) const;
 	/**/
 public:

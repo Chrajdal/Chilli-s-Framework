@@ -48,10 +48,10 @@ void quad_tree_f::insert(const Tpoint<float> & p)
 		float MID_Y = p.m_y;
 		float MAX_Y = GMAXY;
 
-		m_root->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-		m_root->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-		m_root->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-		m_root->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+		m_root->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+		m_root->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+		m_root->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+		m_root->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 	}
 	else
 	{
@@ -76,10 +76,10 @@ void quad_tree_f::insert(const node_f & n)
 		float MID_Y = n.m_p.m_y;
 		float MAX_Y = GMAXY;
 
-		m_root->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-		m_root->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-		m_root->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-		m_root->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+		m_root->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+		m_root->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+		m_root->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+		m_root->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 	}
 	else
 	{

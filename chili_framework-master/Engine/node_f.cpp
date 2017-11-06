@@ -20,9 +20,9 @@ node_f::node_f(const node_f & src)
 	m_ur_r(src.m_ur_r),
 	m_dl_r(src.m_dl_r),
 	m_dr_r(src.m_dr_r),
-	m_velocity(src.m_velocity)
+	m_velocity(src.m_velocity),
+	m_ul(NULL), m_ur(NULL), m_dl(NULL), m_dr(NULL)
 {
-	m_ul = m_ur = m_dl = m_dr = NULL;
 	if (src.m_ul != NULL) m_ul = new node_f(*src.m_ul);
 	if (src.m_ur != NULL) m_ur = new node_f(*src.m_ur);
 	if (src.m_dl != NULL) m_dl = new node_f(*src.m_dl);
@@ -54,6 +54,42 @@ node_f & node_f::operator = (const node_f & src)
 	return *this;
 }
 
+node_f::node_f(const node_f && src)
+	:m_p(move(src.m_p)),
+	m_ul_r(move(src.m_ul_r)),
+	m_ur_r(move(src.m_ur_r)),
+	m_dl_r(move(src.m_dl_r)),
+	m_dr_r(move(src.m_dr_r)),
+	m_velocity(move(src.m_velocity)),
+	m_ul(src.m_ul), m_ur(src.m_ur), m_dl(src.m_dl), m_dr(src.m_dr)
+{
+}
+
+node_f & node_f::operator = (const node_f && src)
+{
+	if (this == &src)
+		return *this;
+
+	m_p = move(src.m_p);
+	m_ul_r = move(src.m_ul_r);
+	m_ur_r = move(src.m_ur_r);
+	m_dl_r = move(src.m_dl_r);
+	m_dr_r = move(src.m_dr_r);
+	m_velocity = move(src.m_velocity);
+
+	delete m_ul; m_ul = NULL;
+	delete m_ur; m_ur = NULL;
+	delete m_dl; m_dl = NULL;
+	delete m_dr; m_dr = NULL;
+
+	m_ul = src.m_ul;
+	m_ur = src.m_ur;
+	m_dl = src.m_dl;
+	m_dr = src.m_dr;
+
+	return *this;
+}
+
 node_f::~node_f(void)
 {
 	delete m_ul; m_ul = NULL;
@@ -81,10 +117,10 @@ void node_f::insert(const Tpoint<float> & p, const node_f * parent)
 				float MID_Y = p.m_y;
 				float MAX_Y = parent->m_ul_r.m_downright.m_y;
 
-				m_ul->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_ul->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_ul->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_ul->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_ul->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_ul->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_ul->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_ul->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
@@ -103,10 +139,10 @@ void node_f::insert(const Tpoint<float> & p, const node_f * parent)
 				float MID_Y = p.m_y;
 				float MAX_Y = parent->m_ur_r.m_downright.m_y;
 
-				m_ur->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_ur->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_ur->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_ur->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_ur->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_ur->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_ur->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_ur->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
@@ -128,10 +164,10 @@ void node_f::insert(const Tpoint<float> & p, const node_f * parent)
 				float MID_Y = p.m_y;
 				float MAX_Y = parent->m_dl_r.m_downright.m_y;
 
-				m_dl->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_dl->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_dl->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_dl->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_dl->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_dl->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_dl->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_dl->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
@@ -150,10 +186,10 @@ void node_f::insert(const Tpoint<float> & p, const node_f * parent)
 				float MID_Y = p.m_y;
 				float MAX_Y = parent->m_dr_r.m_downright.m_y;
 
-				m_dr->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_dr->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_dr->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_dr->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_dr->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_dr->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_dr->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_dr->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
@@ -184,10 +220,10 @@ void node_f::insert(const node_f & n, const node_f * parent)
 				float MID_Y = n.m_p.m_y;
 				float MAX_Y = parent->m_ul_r.m_downright.m_y;
 
-				m_ul->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_ul->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_ul->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_ul->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_ul->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_ul->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_ul->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_ul->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
@@ -208,10 +244,10 @@ void node_f::insert(const node_f & n, const node_f * parent)
 				float MID_Y = n.m_p.m_y;
 				float MAX_Y = parent->m_ur_r.m_downright.m_y;
 
-				m_ur->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_ur->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_ur->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_ur->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_ur->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_ur->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_ur->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_ur->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
@@ -235,10 +271,10 @@ void node_f::insert(const node_f & n, const node_f * parent)
 				float MID_Y = n.m_p.m_y;
 				float MAX_Y = parent->m_dl_r.m_downright.m_y;
 
-				m_dl->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_dl->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_dl->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_dl->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_dl->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_dl->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_dl->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_dl->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
@@ -259,10 +295,10 @@ void node_f::insert(const node_f & n, const node_f * parent)
 				float MID_Y = n.m_p.m_y;
 				float MAX_Y = parent->m_dr_r.m_downright.m_y;
 
-				m_dr->m_ul_r = Trect<float>(Tpoint<float>(MIN_X, MIN_Y), Tpoint<float>(MID_X, MID_Y));
-				m_dr->m_ur_r = Trect<float>(Tpoint<float>(MID_X, MIN_Y), Tpoint<float>(MAX_X, MID_Y));
-				m_dr->m_dl_r = Trect<float>(Tpoint<float>(MIN_X, MID_Y), Tpoint<float>(MID_X, MAX_Y));
-				m_dr->m_dr_r = Trect<float>(Tpoint<float>(MID_X, MID_Y), Tpoint<float>(MAX_X, MAX_Y));
+				m_dr->m_ul_r = {{MIN_X, MIN_Y}, {MID_X, MID_Y}};
+				m_dr->m_ur_r = {{MID_X, MIN_Y}, {MAX_X, MID_Y}};
+				m_dr->m_dl_r = {{MIN_X, MID_Y}, {MID_X, MAX_Y}};
+				m_dr->m_dr_r = {{MID_X, MID_Y}, {MAX_X, MAX_Y}};
 			}
 			else
 			{
