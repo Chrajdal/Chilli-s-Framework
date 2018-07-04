@@ -339,10 +339,11 @@ public:
 
 Snake snake;
 Food food;
-double delay = 50.0;
+double delay = 5.0;
 int score = 0;
 bool keep_updating = true;
 int counter = 0;
+double t1;
 
 //-----------------------------------------------------------------------------
 Game::Game(MainWindow & wnd)
@@ -358,23 +359,11 @@ void Game::Go()
 	if (wnd.kbd.KeyIsPressed(VK_ESCAPE))
 		wnd.Kill();
 
-	CTimer timer;
-
+	t1 = timer.elapsed();
 	gfx.BeginFrame();
 	UpdateModel();
 	ComposeFrame();
 	
-	
-	/* ----------------------------------- */
-	// FPS drawing
-	int elapsed = timer.elapsed();
-	int fps_size = elapsed / Graphics::ScreenWidth;
-	int row = 5;
-	for ( ; row < 5 + fps_size; ++row)
-		gfx.draw_line(5, row, Graphics::ScreenWidth - 5, row, Colors::Blue);
-	gfx.draw_line(5, row, (elapsed) % Graphics::ScreenWidth - 5, row, Colors::Blue);
-	/* ----------------------------------- */
-
 	gfx.EndFrame();
 }
 
@@ -451,6 +440,9 @@ void Game::ComposeFrame()
 	draw_number(gfx, 10, 955, score);
 
 	draw_number(gfx, 500, 955, counter++);
+
+	double t2 = timer.elapsed();
+	draw_number(gfx, 700,955, 1000/int(t2-t1));
 }
 //-----------------------------------------------------------------------------
 
@@ -3046,4 +3038,3 @@ void draw_9(Graphics & gfx, int x, int y) {
 	gfx.PutPixel(15 + x, 34 + y, 0, 0, 0);
 	gfx.PutPixel(16 + x, 34 + y, 104, 104, 104);
 }
-

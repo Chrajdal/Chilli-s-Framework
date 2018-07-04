@@ -45,4 +45,5 @@ private:
 private:
 	MainWindow& wnd;
 	Graphics gfx;
+	CTimer timer;
 };
