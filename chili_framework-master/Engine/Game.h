@@ -24,7 +24,7 @@
 #include "MainWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-
+#include "intx.h"
 class Game
 {
 public:

@@ -330,10 +330,10 @@ intx operator * (const intx & a, const intx & b)
 	else if (b == -1)
 		return -a;
 
-	bool result_sign = a.sign * b.sign;
+	bool result_sign = a.sign && b.sign;
 
 	// Karatsuba ~ O(n^1.5849)
-	int N = max(a.v.size(), a.v.size());
+	int N = max((int)a.v.size(), (int)a.v.size());
 	if (N > 16)
 	{
 		unsigned int half_size = N / 2;
@@ -434,7 +434,7 @@ intx operator / (const intx & a, const intx & b)
 	if (b == -1)
 		return -a;
 
-	bool result_sign = a.sign * b.sign;
+	bool result_sign = a.sign && b.sign;
 
 	intx x = a + b;
 	x.sign = result_sign;
@@ -612,4 +612,55 @@ string intx::toString(void) const
 		os << i;
 	}
 	return os.str();
+}
+
+
+
+
+intx fib(intx n)
+{
+	if (n == 0)
+		return 0;
+	intx previous = 0;
+	intx current = 1;
+	for (intx i = 1; i < n; ++i)
+	{
+		intx next = previous + current;
+		previous = current;
+		current = next;
+	}
+	return current;
+}
+
+intx fact(intx i)
+{
+	intx result = 1;
+	for (; i > 0; --i)
+		result *= i;
+	return result;
+}
+
+intx two_to_x(intx x)
+{
+	intx result = 2;
+	for (intx i = 1; i < x; ++i)
+		result *= 2;
+	return result;
+}
+
+intx n_to_n(const intx & n)
+{
+	intx result = n;
+	for (intx i = 1; i < n; ++i)
+		result *= n;
+	return result;
+}
+
+string generatebignum(const intx & len)
+{
+	string str;
+	str.push_back((rand() % 9) + 1 + '0');
+	for (intx i = 1; i < len; ++i)
+		str.push_back((rand() % 10) + '0');
+	return str;
 }

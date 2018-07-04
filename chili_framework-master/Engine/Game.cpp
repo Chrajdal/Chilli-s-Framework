@@ -11,7 +11,64 @@ void draw_7(Graphics & gfx, int x, int y);
 void draw_8(Graphics & gfx, int x, int y);
 void draw_9(Graphics & gfx, int x, int y);
 
+void draw_number(Graphics & gfx, int x, int y, int number)
+{
+	list<int> digits;
+	do
+	{
+		int digit = number % 10;
+		digits.push_front(digit);
+		number /= 10;
+	} while (number > 0);
 
+	int offset = x;
+	int index = 0;
+	for (const auto & i : digits)
+	{
+		switch (i)
+		{
+		case 1: draw_1(gfx, offset, y); break;
+		case 2: draw_2(gfx, offset, y); break;
+		case 3: draw_3(gfx, offset, y); break;
+		case 4: draw_4(gfx, offset, y); break;
+		case 5: draw_5(gfx, offset, y); break;
+		case 6: draw_6(gfx, offset, y); break;
+		case 7: draw_7(gfx, offset, y); break;
+		case 8: draw_8(gfx, offset, y); break;
+		case 9: draw_9(gfx, offset, y); break;
+		case 0: draw_0(gfx, offset, y); break;
+		}
+		offset += (digits.size() - index++) % 3 == 1 ? 55 : 35;
+
+	}
+
+}
+
+void draw_string_number(Graphics & gfx, int x, int y, const string & str)
+{
+	int offset = x;
+	int index = 0;
+	for (const auto & i : str)
+	{
+		switch (i)
+		{
+		case '1': draw_1(gfx, offset, y); break;
+		case '2': draw_2(gfx, offset, y); break;
+		case '3': draw_3(gfx, offset, y); break;
+		case '4': draw_4(gfx, offset, y); break;
+		case '5': draw_5(gfx, offset, y); break;
+		case '6': draw_6(gfx, offset, y); break;
+		case '7': draw_7(gfx, offset, y); break;
+		case '8': draw_8(gfx, offset, y); break;
+		case '9': draw_9(gfx, offset, y); break;
+		case '0': draw_0(gfx, offset, y); break;
+		}
+		offset += (str.size() - index++) % 3 == 1 ? 55 : 35;
+	}
+
+}
+
+intx index = 0;
 
 Game::Game(MainWindow & wnd)
 	:
@@ -31,12 +88,12 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-
+	index += rand() % 1000000;
 }
 
 void Game::ComposeFrame()
 {
-
+	draw_string_number(gfx, 5, 5, index.toString());
 }
 
 void draw_0(Graphics & gfx, int x, int y)

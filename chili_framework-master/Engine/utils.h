@@ -3,6 +3,24 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <iomanip>
+#include <cmath>
+#include <sstream>
+#include <vector>
+#include <deque>
+#include <functional>
+#include <cassert>
+#include <cstdlib>
+#include <chrono>
+#include <cassert>
+#include <sstream>
+#include <ctime>
+#include <numeric>
+#include <fstream>
+#include <bitset>
 using namespace std;
 using namespace std::chrono;
 
