@@ -1,5 +1,18 @@
 #include "Game.h"
 
+void draw_0(Graphics & gfx, int x, int y);
+void draw_1(Graphics & gfx, int x, int y);
+void draw_2(Graphics & gfx, int x, int y);
+void draw_3(Graphics & gfx, int x, int y);
+void draw_4(Graphics & gfx, int x, int y);
+void draw_5(Graphics & gfx, int x, int y);
+void draw_6(Graphics & gfx, int x, int y);
+void draw_7(Graphics & gfx, int x, int y);
+void draw_8(Graphics & gfx, int x, int y);
+void draw_9(Graphics & gfx, int x, int y);
+
+
+
 Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
