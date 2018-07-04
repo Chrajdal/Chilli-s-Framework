@@ -25,12 +25,6 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 
-#include "node.h"
-#include "node_f.h"
-
-#include "quad_tree.h"
-#include "quad_tree_f.h"
-
 class Game
 {
 public:
