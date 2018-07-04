@@ -304,7 +304,7 @@ void Graphics::EndFrame()
 void Graphics::BeginFrame()
 {
 	// clear the sysbuffer
-	memset(pSysBuffer, 0u, sizeof(Color) * Graphics::ScreenHeight * Graphics::ScreenWidth);
+	memset(pSysBuffer, 255u, sizeof(Color) * Graphics::ScreenHeight * Graphics::ScreenWidth);
 
 	// if you ever don't want black as background
 	//memset(pSysBuffer, Colors::LightGray.dword, sizeof(Color) * Graphics::ScreenHeight * Graphics::ScreenWidth);
