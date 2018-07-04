@@ -21,24 +21,25 @@ void draw_number(Graphics & gfx, int x, int y, int number)
 		number /= 10;
 	} while (number > 0);
 
-	int offset = x;
+	int offsetx = x;
+	int offsety = y;
 	int index = 0;
 	for (const auto & i : digits)
 	{
 		switch (i)
 		{
-		case 1: draw_1(gfx, offset, y); break;
-		case 2: draw_2(gfx, offset, y); break;
-		case 3: draw_3(gfx, offset, y); break;
-		case 4: draw_4(gfx, offset, y); break;
-		case 5: draw_5(gfx, offset, y); break;
-		case 6: draw_6(gfx, offset, y); break;
-		case 7: draw_7(gfx, offset, y); break;
-		case 8: draw_8(gfx, offset, y); break;
-		case 9: draw_9(gfx, offset, y); break;
-		case 0: draw_0(gfx, offset, y); break;
+		case 1: draw_1(gfx, offsetx, offsety); break;
+		case 2: draw_2(gfx, offsetx, offsety); break;
+		case 3: draw_3(gfx, offsetx, offsety); break;
+		case 4: draw_4(gfx, offsetx, offsety); break;
+		case 5: draw_5(gfx, offsetx, offsety); break;
+		case 6: draw_6(gfx, offsetx, offsety); break;
+		case 7: draw_7(gfx, offsetx, offsety); break;
+		case 8: draw_8(gfx, offsetx, offsety); break;
+		case 9: draw_9(gfx, offsetx, offsety); break;
+		case 0: draw_0(gfx, offsetx, offsety); break;
 		}
-		offset += (digits.size() - index++) % 3 == 1 ? 55 : 35;
+		offsetx += (digits.size() - index++) % 3 == 1 ? 55 : 35;
 
 	}
 
@@ -46,29 +47,39 @@ void draw_number(Graphics & gfx, int x, int y, int number)
 
 void draw_string_number(Graphics & gfx, int x, int y, const string & str)
 {
-	int offset = x;
+	int offsetx = x;
+	int offsety = y;
 	int index = 0;
 	for (const auto & i : str)
 	{
 		switch (i)
 		{
-		case '1': draw_1(gfx, offset, y); break;
-		case '2': draw_2(gfx, offset, y); break;
-		case '3': draw_3(gfx, offset, y); break;
-		case '4': draw_4(gfx, offset, y); break;
-		case '5': draw_5(gfx, offset, y); break;
-		case '6': draw_6(gfx, offset, y); break;
-		case '7': draw_7(gfx, offset, y); break;
-		case '8': draw_8(gfx, offset, y); break;
-		case '9': draw_9(gfx, offset, y); break;
-		case '0': draw_0(gfx, offset, y); break;
+		case '1': draw_1(gfx, offsetx, offsety); break;
+		case '2': draw_2(gfx, offsetx, offsety); break;
+		case '3': draw_3(gfx, offsetx, offsety); break;
+		case '4': draw_4(gfx, offsetx, offsety); break;
+		case '5': draw_5(gfx, offsetx, offsety); break;
+		case '6': draw_6(gfx, offsetx, offsety); break;
+		case '7': draw_7(gfx, offsetx, offsety); break;
+		case '8': draw_8(gfx, offsetx, offsety); break;
+		case '9': draw_9(gfx, offsetx, offsety); break;
+		case '0': draw_0(gfx, offsetx, offsety); break;
 		}
-		offset += (str.size() - index++) % 3 == 1 ? 55 : 35;
+		offsetx += (str.size() - index++) % 3 == 1 ? 55 : 35;
+
+		if (offsetx >= gfx.ScreenWidth)
+		{
+			offsety += 40;
+			offsetx = x;
+		}
+
+		if (offsety > gfx.ScreenHeight - 40)
+			return;
 	}
 
 }
 
-intx index = 0;
+intx index = 2;
 
 Game::Game(MainWindow & wnd)
 	:
@@ -82,18 +93,26 @@ void Game::Go()
 {
 	if (wnd.kbd.KeyIsPressed(VK_ESCAPE))
 		wnd.Kill();
+	gfx.BeginFrame();
+
+	UpdateModel();
+	ComposeFrame();
+
 	gfx.EndFrame();
 }
 
 
 void Game::UpdateModel()
 {
-	index += rand() % 1000000;
+	index += rand() % 1000000 + 1;
+
+	//this_thread::sleep_for(50ms);
 }
 
 void Game::ComposeFrame()
 {
 	draw_string_number(gfx, 5, 5, index.toString());
+	draw_number(gfx, 50, 50, 500);
 }
 
 void draw_0(Graphics & gfx, int x, int y)
