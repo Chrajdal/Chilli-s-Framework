@@ -12,6 +12,11 @@ void Game::Go()
 {
 	if (wnd.kbd.KeyIsPressed(VK_ESCAPE))
 		wnd.Kill();
+	gfx.BeginFrame();
+
+	UpdateModel();
+	ComposeFrame();
+
 	gfx.EndFrame();
 }
 
