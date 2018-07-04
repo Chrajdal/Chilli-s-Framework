@@ -90,10 +90,14 @@ public:
 	{
 		start = chrono::system_clock::now();
 	}
-	double elapsed(void) const
+	inline double elapsed(void) const
 	{
 		return (double)(chrono::duration_cast<chrono::milliseconds>
 			(chrono::system_clock::now() - start)).count();
+	}
+	inline void restart(void)
+	{
+		start = chrono::system_clock::now();
 	}
 private:
 	chrono::time_point<chrono::system_clock> start;

@@ -154,10 +154,6 @@
     <ClInclude Include="Mat2.h" />
     <ClInclude Include="Mat3.h" />
     <ClInclude Include="Mouse.h" />
-    <ClInclude Include="node.h" />
-    <ClInclude Include="node_f.h" />
-    <ClInclude Include="quad_tree.h" />
-    <ClInclude Include="quad_tree_f.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="SoundEffect.h" />
@@ -174,10 +170,6 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="Mouse.cpp" />
-    <ClCompile Include="node.cpp" />
-    <ClCompile Include="node_f.cpp" />
-    <ClCompile Include="quad_tree.cpp" />
-    <ClCompile Include="quad_tree_f.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
