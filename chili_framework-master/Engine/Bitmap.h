@@ -15,6 +15,7 @@ public:
 	void PutPixel(int x, int y, const Color & c);
 	Color GetPixel(int x, int y) const;
 	void Draw(Graphics & gfx, int x, int y, const Color & alpha) const;
+	void DrawPart(Graphics & gfx, int x, int y,int fromx, int fromy, int tox, int toy, const Color & alpha) const;
 private:
 	Color* pPixels = nullptr;
 	int width;

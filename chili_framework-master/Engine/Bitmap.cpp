@@ -108,8 +108,16 @@ Color Bitmap::GetPixel(int x, int y) const
 
 void Bitmap::Draw(Graphics & gfx, int x, int y, const Color & alpha) const
 {
-	for (int i = x; i < x + width; ++i)
-		for (int j = y; j < y + height; ++j)
-			//if (pPixels[j * width + i] != alpha)
+	for (int i = 0; i < width; ++i)
+		for (int j = 0; j < height; ++j)
+			if (pPixels[j * width + i] != alpha)
 				gfx.PutPixel(x + i, y + j, pPixels[j * width + i]);
+}
+
+void Bitmap::DrawPart(Graphics & gfx, int x, int y, int fromx, int fromy, int tox, int toy, const Color & alpha) const
+{
+	for (int i = fromx; i < tox; ++i)
+		for (int j = fromy; j < toy; ++j)
+			if (pPixels[j*width + i] != alpha)
+				gfx.PutPixel(x + i - fromx, y + j - fromy, pPixels[j * width + i]);
 }
