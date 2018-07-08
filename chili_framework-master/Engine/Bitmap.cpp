@@ -121,3 +121,14 @@ void Bitmap::DrawPart(Graphics & gfx, int x, int y, int fromx, int fromy, int to
 			if (pPixels[j*width + i] != alpha)
 				gfx.PutPixel(x + i - fromx, y + j - fromy, pPixels[j * width + i]);
 }
+
+void Bitmap::resize(int newwidth, int newheight)
+{
+	if (newwidth == width && newheight == height)
+		return;
+
+	double height_ratio = double(newheight) / double(height);
+	double width_ratio = double(newwidth) / double(width);
+
+
+}
