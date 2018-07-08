@@ -1,5 +1,30 @@
 #include "Game.h"
 #include "Bitmap.h"
+#include "Font.h"
+
+#define CHAR_WIDTH 106;
+
+string str = "";
+
+void gen_random(string & str, const int len)
+{
+	str = "";
+	static const char alphanum[] =
+		"0123456789"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz";
+
+	for (int i = 0; i < len; ++i)
+		str += alphanum[rand() % (sizeof(alphanum) - 1)];
+}
+
+void gen_randascii(string & str, const int len)
+{
+	str = "";
+	static const char arr[] = "!\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+	for (int i = 0; i < len; ++i)
+		str += arr[rand() % (sizeof(arr) - 1)];
+}
 
 Game::Game(MainWindow & wnd)
 	:
@@ -7,6 +32,12 @@ Game::Game(MainWindow & wnd)
 	gfx(wnd)
 {
 	srand(unsigned(time(0)));
+	
+	str = "domecekas";
+	//for (int i = 0; i < 9; i++)
+	//{
+	//	str += char(rand() % 26) + 'a';
+	//}
 }
 
 void Game::Go()
@@ -21,26 +52,23 @@ void Game::Go()
 	gfx.EndFrame();
 }
 
-
 void Game::UpdateModel()
 {
 
 }
 
-Bitmap a("0.bmp");
-Bitmap b("1.bmp");
-Bitmap font ("Font.bmp");
-
+Bitmap test("9.bmp");
+Bitmap test_2("8.bmp");
+bool has_been_resized = false;
 void Game::ComposeFrame()
 {
-	a.Draw(gfx, 50, 50, Colors::White);
-	b.Draw(gfx, 100, 50, Colors::White);
-	Bitmap f2 = font;
-	for (int i = 0; i < 9; i++)
-		f2.DrawPart(gfx, i * 105, 200, i * 105, 0, (i + 1) * 105, 250, Colors::White);
-	for (int i = 0; i < 9; i++)
-		f2.DrawPart(gfx, i * 105, 400, i * 105, 250, (i + 1) * 105, 500, Colors::White);
-	for (int i = 0; i < 9; i++)
-		f2.DrawPart(gfx, i * 105, 700, i * 105, 500, (i + 1) * 105, 650, Colors::White);
 
+	test.Draw(gfx, 0, 0, Colors::White);
+	if (wnd.kbd.KeyIsPressed(VK_SPACE) && has_been_resized == false);
+	{
+		test.resize(50, 50);
+		has_been_resized = true;
+		test_2 = test;
+	}
+	test_2.Draw(gfx, 101, 101, Colors::White);
 }

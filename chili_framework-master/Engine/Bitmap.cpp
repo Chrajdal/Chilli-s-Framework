@@ -81,6 +81,9 @@ Bitmap::~Bitmap()
 
 Bitmap& Bitmap::operator=(const Bitmap & rhs)
 {
+	if (this == &rhs)
+		return *this;
+
 	width = rhs.width;
 	height = rhs.height;
 
@@ -89,9 +92,7 @@ Bitmap& Bitmap::operator=(const Bitmap & rhs)
 
 	const int nPixels = width * height;
 	for (int i = 0; i < nPixels; i++)
-	{
 		pPixels[i] = rhs.pPixels[i];
-	}
 	//memcpy(pPixels, rhs.pPixels, sizeof(Color) * width * height);
 	return *this;
 }
@@ -116,10 +117,18 @@ void Bitmap::Draw(Graphics & gfx, int x, int y, const Color & alpha) const
 
 void Bitmap::DrawPart(Graphics & gfx, int x, int y, int fromx, int fromy, int tox, int toy, const Color & alpha) const
 {
-	for (int i = fromx; i < tox; ++i)
-		for (int j = fromy; j < toy; ++j)
+	for (int i = fromx; i < tox && i < width; ++i)
+		for (int j = fromy; j < toy && j < height; ++j)
 			if (pPixels[j*width + i] != alpha)
 				gfx.PutPixel(x + i - fromx, y + j - fromy, pPixels[j * width + i]);
+}
+
+void Bitmap::leave_only_this_color(const Color & color)
+{
+	for (int i = 0; i < width; ++i)
+		for (int j = 0; j < height; ++j)
+			if (pPixels[j*width + i] != color)
+				pPixels[j*width + i] = Colors::White;
 }
 
 void Bitmap::resize(int newwidth, int newheight)
@@ -128,7 +137,50 @@ void Bitmap::resize(int newwidth, int newheight)
 		return;
 
 	double height_ratio = double(newheight) / double(height);
-	double width_ratio = double(newwidth) / double(width);
+	double width_ratio  = double(newwidth)  / double(width);
 
+	Color * tmp = new Color[newwidth * newheight];
+	if (newwidth > width)
+	{
+		if (newheight > height)
+		{
 
+		}
+		else
+		{
+
+		}
+		delete tmp;
+		return;
+	}
+	else // newwidth < width
+	{
+		if (newheight > height)
+		{
+			delete tmp;
+			return;
+		}
+		else // newheight < height
+		{
+			int xOut = 0; double x = 0.0;
+			for (; xOut < newwidth*newheight; x += width_ratio, xOut++)
+			{
+				Color sample0 = pPixels[int(std::floor(x))];
+				Color sample1 = pPixels[int(std::ceil(x))];
+
+				const float t = x - std::floor(x);
+
+				unsigned char sampleR = sample0.GetR() + ((sample1.GetR() - sample0.GetR()) * t);
+				unsigned char sampleG = sample0.GetG() + ((sample1.GetG() - sample0.GetG()) * t);
+				unsigned char sampleB = sample0.GetB() + ((sample1.GetB() - sample0.GetB()) * t);
+
+				tmp[xOut] = Colors::MakeRGB(sampleR, sampleG, sampleB);
+
+				delete pPixels;
+				pPixels = tmp;
+				tmp = NULL;
+				return;
+			}
+		}
+	}
 }
