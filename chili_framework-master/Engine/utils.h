@@ -112,4 +112,6 @@ long sq_distance(const Tpoint<int> & a, const Tpoint<int> & b);
 long long sq_distance(const Tpoint <long> & a, const Tpoint<long> & b);
 double sq_distance(const Tpoint<float> & a, const Tpoint<float> & b);
 double sq_distance(const Tpoint<double> & a, const Tpoint<double> & b);
+void gen_random(string & str, const int len);
+void gen_randascii(string & str, const int len);
 //-----------------------------------------------------------------------------
