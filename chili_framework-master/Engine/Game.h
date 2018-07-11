@@ -1,5 +1,4 @@
 #pragma once
-#pragma optimize( "", off )
 #include <iostream>
 #include <iomanip>
 #include <string>

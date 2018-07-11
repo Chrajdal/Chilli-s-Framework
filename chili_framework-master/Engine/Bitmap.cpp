@@ -168,7 +168,7 @@ void Bitmap::resize(int newwidth, int newheight)
 				Color sample0 = pPixels[int(std::floor(x))];
 				Color sample1 = pPixels[int(std::ceil(x))];
 
-				const float t = x - std::floor(x);
+				const double t = x - std::floor(x);
 
 				unsigned char sampleR = sample0.GetR() + ((sample1.GetR() - sample0.GetR()) * t);
 				unsigned char sampleG = sample0.GetG() + ((sample1.GetG() - sample0.GetG()) * t);

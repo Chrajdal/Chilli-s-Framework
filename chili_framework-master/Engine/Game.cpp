@@ -1,13 +1,17 @@
 #include "Game.h"
 
-constexpr int    N = 500;
+constexpr int    N = 1500;
 constexpr double G = 6.673e-10;
 constexpr double TIMESTAMP = 1e11;
 constexpr double max_mass = 1e-10;
 constexpr double min_mass = 1e-15;
+constexpr double max_speed = 1e-9;
+constexpr double min_speed = -1e-9;
 
-int g_max_mass = numeric_limits<double> ::min();
-int g_min_mass = numeric_limits<double> ::max();
+double g_max_mass = std::numeric_limits<double>::min();
+double g_min_mass = std::numeric_limits<double>::max();
+
+const double pi = std::acos(-1);
 
 vector<Color> gradient;
 
@@ -49,6 +53,17 @@ public:
 	{
 		vx += timestamp * fx / mass;
 		vy += timestamp * fy / mass;
+
+		if (vx < min_speed)
+			vx = min_speed;
+		if (vx > max_speed)
+			vx = max_speed;
+		if (vy < min_speed)
+			vy = min_speed;
+		if (vy > max_speed)
+			vy = max_speed;
+
+
 		rx += timestamp * vx;
 		ry += timestamp * vy;
 	}
@@ -58,9 +73,9 @@ public:
 		if (rx > 10 && rx < Graphics::ScreenWidth - 10 && ry > 10 && ry < Graphics::ScreenHeight - 10)
 		{
 			double gradient_step = (g_max_mass - g_min_mass) / gradient.size();
-			int grad_index = std::floor(mass / gradient_step);
+			int grad_index = (int)std::floor(mass / gradient_step);
 			Color c = gradient[grad_index];
-			gfx.draw_circle(rx, ry, 2, c);
+			gfx.draw_circle(rx, ry, 5, c);
 		}
 	}
 	void resetForce()
@@ -68,15 +83,19 @@ public:
 		fx = 0.0;
 		fy = 0.0;
 	}
-	void addForce(particle b)
+	void addForce(particle & b)
 	{
 		double EPS = 3E3;      // softening parameter (just to avoid infinities)
 		double dx = b.rx - rx;
 		double dy = b.ry - ry;
 		double dist = sqrt(dx*dx + dy * dy);
+
 		double F = (G * mass * b.mass) / (dist*dist + EPS * EPS);
 		fx += F * dx / dist;
 		fy += F * dy / dist;
+
+		b.fx -= F * dx / dist;
+		b.fy -= F * dy / dist;
 	}
 
 	double rx, ry;//position components
@@ -93,6 +112,13 @@ double rand_double(double min, double max)
 	return (max - min) * ((double)rand() / (double)RAND_MAX) + min;
 }
 
+Tpoint<double> random_pos(void)
+{
+	double angle = rand_double(0.0, 1.0) * pi * 2;
+	double radius = rand_double(0.0, 500);
+	return Tpoint<double> {std::cos(angle)*radius + Graphics::ScreenWidth / 2, std::sin(angle)*radius + Graphics::ScreenHeight/ 2};
+}
+
 Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
@@ -102,8 +128,8 @@ Game::Game(MainWindow & wnd)
 	
 	for (int x = 0, y = 0; x < 255; ++x, ++y)
 	{
-		int red = x-255;
-		int green = 255-x ;
+		int red = x - 255;
+		int green = 255 - x;
 		int blue = y - x;
 
 		gradient.push_back(Colors::MakeRGB(red, green, blue));
@@ -111,16 +137,17 @@ Game::Game(MainWindow & wnd)
 
 	particles.reserve(N);
 
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < 2; i++)
 	{
+		Tpoint<double> rnd_pos = random_pos();
 		particles.emplace_back(
-			rand_double(0, 1000), rand_double(0, 1000), // position
+			rnd_pos.m_x, rnd_pos.m_y, // position
 			rand_double(-1e-13, 1e-13), rand_double(-1e-13, 1e-13), // velocity
 			rand_double(-1e-13, 1e-10), rand_double(-1e-13, 1e-10), // force
 			rand_double(min_mass, max_mass)); //mass
 	}
 	
-	particles[0].mass = max_mass *50 ;
+	particles[0].mass = max_mass;
 }
 
 void Game::Go()
@@ -129,41 +156,66 @@ void Game::Go()
 		wnd.Kill();
 	gfx.BeginFrame();
 
+
+	g_max_mass = std::numeric_limits<double>::min();
+	g_min_mass = std::numeric_limits<double>::max();
+	for (const auto & i : particles)
+	{
+		if (i.mass > g_max_mass)
+		{
+
+			g_max_mass = i.mass;
+		}
+		if (i.mass < g_min_mass)
+		{
+			g_min_mass = i.mass;
+		}
+	}
 	
-	ComposeFrame();
 	UpdateModel();
-
-
+	ComposeFrame();
+	
 	gfx.EndFrame();
 }
 
 void Game::UpdateModel()
 {
-	double epsilon = 1e1;
-	for (int i = 0; i < particles.size(); ++i)
-	{
-		for (int j = i + 1; j < particles.size(); ++j)
-		{
-			if (abs(particles[i].rx - particles[j].rx) < epsilon &&
-				abs(particles[i].ry - particles[j].ry) < epsilon)
-			{
-				// p = m * v					
-				particles[i].vx += particles[j].vx / (particles[j].mass);
-				particles[i].vy += particles[j].vy / (particles[j].mass);
+	//double epsilon = 1e0;
+	//for (int i = 0; i < particles.size(); ++i)
+	//{
+	//	for (int j = i + 1; j < particles.size(); ++j)
+	//	{
+	//		if (sq_distance(Tpoint<double>{ particles[i].rx , particles[i].ry}, Tpoint<double>{ particles[j].rx, particles[j].ry  }) < epsilon * epsilon)
+	//		{
+	//			//// p = m * v					
+	//			//if (particles[i].mass > particles[j].mass)
+	//			//{
+	//			//	particles[i].vx += -(particles[j].vx * particles[j].mass) / particles[i].mass;
+	//			//	particles[i].vy += -(particles[j].vy * particles[j].mass) / particles[i].mass;
+	//			//	particles[i].mass += particles[j].mass;
+	//			//
+	//			//	particles.erase(particles.begin() + j);
+	//			//}
+	//			//if (particles[i].mass <= particles[j].mass)
+	//			//{
+	//			//	particles[j].vx += -(particles[i].vx * particles[i].mass) / particles[j].mass;
+	//			//	particles[j].vy += -(particles[i].vy * particles[i].mass) / particles[j].mass;
+	//			//	particles[j].mass += particles[i].mass;
+	//			//
+	//			//	particles.erase(particles.begin() + i);
+	//			//}
+	//			particles[i].mass += particles[j].mass;
+	//			particles.erase(particles.begin() + j);
+	//		}
+	//	}
+	//}
 
-				particles[i].mass += particles[j].mass;
 
-				particles.erase(particles.begin() + j);
-				break;
-			}
-		}
-	}
-
-
+	
 	for (int i = 0; i < particles.size(); ++i)
 	{
 		particles[i].resetForce();
-		for (int j = 0; j < particles.size(); ++j)
+		for (int j = i+1; j < particles.size(); ++j)
 			if (i != j)
 				particles[i].addForce(particles[j]);
 	}
@@ -175,15 +227,6 @@ void Game::UpdateModel()
 		particles[0].rx = 500;
 		particles[0].ry = 500;
 	}
-
-	for (const auto & i : particles)
-	{
-		if (i.mass > g_max_mass)
-			g_max_mass = i.mass;
-		if (i.mass < g_min_mass)
-			g_min_mass = i.mass;
-	}
-
 
 	if (wnd.mouse.LeftIsPressed())
 	{
@@ -202,14 +245,41 @@ void Game::UpdateModel()
 			wnd.mouse.GetPosX() + rand_double(-10, 10), wnd.mouse.GetPosY() + rand_double(-10, 10), // position
 			0, 0, // velocity
 			rand_double(-1e-13, 1e-10), rand_double(-1e-13, 1e-10), // force
-			rand_double(max_mass/10, max_mass))); //mass
+			rand_double(min_mass, max_mass))); //mass
 	}
 
 	if (wnd.kbd.KeyIsPressed(VK_SPACE))
+	{
+		g_max_mass = std::numeric_limits<double>::min();
+		g_min_mass = std::numeric_limits<double>::max();
 		particles.clear();
+	}
+
+	if (wnd.kbd.KeyIsPressed(VK_UP))
+	{
+		for (int i = 0; i < 200; ++i)
+		{
+
+			Tpoint<double> rnd_pos = random_pos();
+			particles.emplace_back(
+				rnd_pos.m_x, rnd_pos.m_y, // position
+				rand_double(-1e-13, 1e-13), rand_double(-1e-13, 1e-13), // velocity
+				rand_double(-1e-13, 1e-10), rand_double(-1e-13, 1e-10), // force
+				rand_double(min_mass, max_mass)); //mass
+		}
+	}
+
+	if (wnd.kbd.KeyIsPressed(VK_DOWN))
+	{
+		for (auto & i : particles)
+		{
+			i.vx = 0.0;
+			i.vy = 0.0;
+		}
+	}
 
 	if (wnd.kbd.KeyIsPressed(VK_CONTROL))
-		if (!particles.empty())
+		if (particles.size() > 10)
 			for (int i = 0; i < 10; ++i)
 				particles.erase(particles.begin() + rand() % particles.size());
 
@@ -217,8 +287,9 @@ void Game::UpdateModel()
 
 void Game::ComposeFrame()
 {
-	for (const auto & i : particles)
+	for (auto & i : particles)
 		i.draw(gfx);
 	//this_thread::sleep_for(250ms);
-
+	
+	cout << "n: " <<  particles.size() << ", max_mass = " << g_max_mass << ", min_mass = " << g_min_mass << "\n";
 }
