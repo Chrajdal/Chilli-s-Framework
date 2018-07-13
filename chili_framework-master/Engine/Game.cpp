@@ -196,62 +196,15 @@ void Game::Go()
 		}
 	}
 	
-	UpdateModel();
+	HandleInput();	
+	UpdateModel();	
 	ComposeFrame();
 	
 	gfx.EndFrame();
 }
 
-void Game::UpdateModel()
+void Game::HandleInput()
 {
-	double epsilon = 1e0;
-	for (int i = 0; i < particles.size(); ++i)
-	{
-		for (int j = i + 1; j < particles.size(); ++j)
-		{
-			if (sq_distance(Tpoint<double>{ particles[i].rx , particles[i].ry}, Tpoint<double>{ particles[j].rx, particles[j].ry  }) < epsilon * epsilon)
-			{
-				// p = m * v					
-				if (particles[i].mass > particles[j].mass)
-				{
-					particles[i].vx += -(particles[j].vx * particles[j].mass) / particles[i].mass;
-					particles[i].vy += -(particles[j].vy * particles[j].mass) / particles[i].mass;
-					particles[i].mass += particles[j].mass;
-				
-					particles.erase(particles.begin() + j);
-				}
-				if (particles[i].mass <= particles[j].mass)
-				{
-					particles[j].vx += -(particles[i].vx * particles[i].mass) / particles[j].mass;
-					particles[j].vy += -(particles[i].vy * particles[i].mass) / particles[j].mass;
-					particles[j].mass += particles[i].mass;
-				
-					particles.erase(particles.begin() + i);
-				}
-				//particles[i].mass += particles[j].mass;
-				//particles.erase(particles.begin() + j);
-			}
-		}
-	}
-
-
-	
-	for (int i = 0; i < particles.size(); ++i)
-	{
-		particles[i].resetForce();
-		for (int j = 0; j < particles.size(); ++j)
-			if (i != j)
-				particles[i].addForce(particles[j]);
-	}
-	for (auto & i : particles)
-		i.update(TIMESTAMP);
-	
-	if (!particles.empty())
-	{
-		particles[0].rx = 500;
-		particles[0].ry = 500;
-	}
-
 	if (wnd.mouse.LeftIsPressed())
 	{
 		particles.push_back(particle(
@@ -306,6 +259,59 @@ void Game::UpdateModel()
 		if (particles.size() > 10)
 			for (int i = 0; i < 10; ++i)
 				particles.erase(particles.begin() + rand() % particles.size());
+}
+
+void Game::UpdateModel()
+{
+	if(particles.size() <= 1)
+		return;
+	
+	double epsilon = 1e0;
+	for (int i = 0; i < particles.size(); ++i)
+	{
+		for (int j = i + 1; j < particles.size(); ++j)
+		{
+			if (sq_distance(Tpoint<double>{ particles[i].rx , particles[i].ry}, Tpoint<double>{ particles[j].rx, particles[j].ry  }) < epsilon * epsilon)
+			{
+				// p = m * v					
+				if (particles[i].mass > particles[j].mass)
+				{
+					particles[i].vx += -(particles[j].vx * particles[j].mass) / particles[i].mass;
+					particles[i].vy += -(particles[j].vy * particles[j].mass) / particles[i].mass;
+					particles[i].mass += particles[j].mass;
+				
+					particles.erase(particles.begin() + j);
+				}
+				if (particles[i].mass <= particles[j].mass)
+				{
+					particles[j].vx += -(particles[i].vx * particles[i].mass) / particles[j].mass;
+					particles[j].vy += -(particles[i].vy * particles[i].mass) / particles[j].mass;
+					particles[j].mass += particles[i].mass;
+				
+					particles.erase(particles.begin() + i);
+				}
+				//particles[i].mass += particles[j].mass;
+				//particles.erase(particles.begin() + j);
+			}
+		}
+	}
+	for (int i = 0; i < particles.size(); ++i)
+	{
+		particles[i].resetForce();
+		for (int j = 0; j < particles.size(); ++j)
+			if (i != j)
+				particles[i].addForce(particles[j]);
+	}
+	for (auto & i : particles)
+		i.update(TIMESTAMP);
+	
+	if (!particles.empty())
+	{
+		particles[0].rx = 500;
+		particles[0].ry = 500;
+	}
+
+	
 
 }
 
