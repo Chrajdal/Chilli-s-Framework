@@ -326,7 +326,7 @@ void Game::Go()
 	CTimer timer;
 
 	gfx.BeginFrame();
-	//UpdateModel();
+	UpdateModel();
 	ComposeFrame();
 	
 	/* ----------------------------------- */
