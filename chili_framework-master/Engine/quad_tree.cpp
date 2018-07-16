@@ -41,12 +41,12 @@ void quad_tree::insert(const Tpoint<int> & p)
 	if (m_root == NULL)
 	{
 		m_root = new node(p);
-		int MIN_X = GMINX;
-		int MID_X = p.m_x;
-		int MAX_X = GMAXX;
-		int MIN_Y = GMINY;
-		int MID_Y = p.m_y;
-		int MAX_Y = GMAXY;
+		int MIN_X = (int)GMINX;
+		int MID_X = (int)p.m_x;
+		int MAX_X = (int)GMAXX;
+		int MIN_Y = (int)GMINY;
+		int MID_Y = (int)p.m_y;
+		int MAX_Y = (int)GMAXY;
 
 		m_root->m_ul_r = Trect<int>(Tpoint<int>(MIN_X, MIN_Y), Tpoint<int>(MID_X, MID_Y));
 		m_root->m_ur_r = Trect<int>(Tpoint<int>(MID_X, MIN_Y), Tpoint<int>(MAX_X, MID_Y));

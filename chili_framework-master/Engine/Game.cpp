@@ -1,5 +1,10 @@
 #include "Game.h"
 
+//constexpr float GMINY = 0;
+//constexpr float GMAXY = (Graphics::ScreenHeight - 1);
+//constexpr float GMINX = 0;
+//constexpr float GMAXX = (Graphics::ScreenWidth - 1);
+
 bool keep_updating = true;
 int vec_size = 100;
 bool draw_rect_bool = false;
@@ -22,21 +27,6 @@ void draw_rect(Graphics & gfx, const Trect<T> & rect, const Color & c = Colors::
 			gfx.PutPixel((int)rect.m_upleft.m_x, (int)i, c);
 			gfx.PutPixel((int)rect.m_downright.m_x, (int)i, c);
 		}
-	}
-}
-template<typename T>
-void draw_point(Graphics & gfx, const Tpoint<T> & p, const Color & c = Colors::White)
-{
-	if (p.m_x >= 0 && p.m_y >= 0 &&
-		p.m_x < Graphics::ScreenWidth &&
-		p.m_y < Graphics::ScreenHeight)
-	{
-		//gfx.PutPixel(p.m_x - 1, p.m_y - 1, c);
-		//gfx.PutPixel(p.m_x - 1, p.m_y + 1, c);
-		//gfx.PutPixel(p.m_x + 1, p.m_y - 1, c);
-		//gfx.PutPixel(p.m_x + 1, p.m_y + 1, c);
-
-		gfx.PutPixel((int)p.m_x, (int)p.m_y, c);
 	}
 }
 
@@ -167,19 +157,19 @@ void update_node_at_once(const vector<node_f> & closest_points, node_f & n)
 		}
 	}
 
-	alignment.x /= closest_points.size();
-	alignment.y /= closest_points.size();
+	alignment.x /= (float)closest_points.size();
+	alignment.y /= (float)closest_points.size();
 	alignment = alignment - n.m_velocity;
 
 	separation.x *= -1;
 	separation.y *= -1;
 
-	cohesion.x /= closest_points.size();
-	cohesion.y /= closest_points.size();
+	cohesion.x /= (float)closest_points.size();
+	cohesion.y /= (float)closest_points.size();
 
-	float alignment_weight = 3.0f;
-	float separation_weight = 0.0f;
-	float cohesion_weight = 0.0f;
+	float alignment_weight = 1.0f;
+	float separation_weight = 1.0f;
+	float cohesion_weight = 1.0f;
 
 	n.m_velocity.x += alignment.x * alignment_weight + separation.x * separation_weight + cohesion.x * cohesion_weight;
 	n.m_velocity.y += alignment.y * alignment_weight + separation.y * separation_weight + cohesion.y * cohesion_weight;
@@ -198,12 +188,12 @@ void test_update_node_at_once(quad_tree_f & t, node_f n, quad_tree_f & nt)
 
 	update_node_at_once(closest_points, n);
 
-	float length = sqrt(n.m_velocity.x * n.m_velocity.x + n.m_velocity.y * n.m_velocity.y);
-	if (length >= 5.0f)
-	{
-		n.m_velocity.x /= length;
-		n.m_velocity.y /= length;
-	}
+	//float length = sqrt(n.m_velocity.x * n.m_velocity.x + n.m_velocity.y * n.m_velocity.y);
+	//if (length >= 5.0f)
+	//{
+	//	n.m_velocity.x /= length;
+	//	n.m_velocity.y /= length;
+	//}
 
 	//if (n.m_p.m_x >= float(Graphics::ScreenWidth))
 	//	n.m_p.m_x = float((int)(n.m_p.m_x) % Graphics::ScreenWidth);
@@ -217,10 +207,10 @@ void test_update_node_at_once(quad_tree_f & t, node_f n, quad_tree_f & nt)
 	n.m_p.m_x += n.m_velocity.x;
 	n.m_p.m_y += n.m_velocity.y;
 
-	if (n.m_p.m_x > GMAXX) n.m_p.m_x = GMINX + 5;
-	if (n.m_p.m_x < GMINX) n.m_p.m_x = GMAXX - 5;
-	if (n.m_p.m_y > GMAXY) n.m_p.m_y = GMINY + 5;
-	if (n.m_p.m_y < GMINY) n.m_p.m_y = GMAXY - 5;
+	//if (n.m_p.m_x > GMAXX) n.m_p.m_x = GMINX + 5;
+	//if (n.m_p.m_x < GMINX) n.m_p.m_x = GMAXX - 5;
+	//if (n.m_p.m_y > GMAXY) n.m_p.m_y = GMINY + 5;
+	//if (n.m_p.m_y < GMINY) n.m_p.m_y = GMAXY - 5;
 
 	nt.insert(move(n));
 }
@@ -285,13 +275,15 @@ void test_update_node(quad_tree_f & t, node_f & n, quad_tree_f & nt)
 		n.m_p.m_y += (float)Graphics::ScreenHeight;
 	}
 	
-	nt.insert(n);
+	
 
 	if (n.m_ul != NULL)	test_update_node(t, *n.m_ul, nt);
 	if (n.m_ur != NULL)	test_update_node(t, *n.m_ur, nt);
 	if (n.m_dl != NULL)	test_update_node(t, *n.m_dl, nt);
 	if (n.m_dr != NULL)	test_update_node(t, *n.m_dr, nt);
 
+
+	nt.insert(n);
 }
 void test_update_tree(quad_tree_f & t)
 {
@@ -309,14 +301,9 @@ Game::Game(MainWindow & wnd)
 	gfx(wnd)
 {
 	srand(unsigned(time(0)));
-
-	//for (int i = 0; i < 1; ++i)
-	//{
-	//	node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth - 1), random_between(0.0f, (float)Graphics::ScreenWidth - 1)));
-	//	x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
-	//	t.insert(x);
-	//}
 }
+
+inline ostream & nl(ostream & os) { return os << "\n"; }
 
 void Game::Go()
 {
@@ -328,42 +315,33 @@ void Game::Go()
 	gfx.BeginFrame();
 	UpdateModel();
 	ComposeFrame();
+	HandleInput();
 	
-	/* ----------------------------------- */
-	// FPS drawing
-	int elapsed = timer.elapsed();
-	int fps_size = elapsed / Graphics::ScreenWidth;
-	int row = 5;
-	for ( ; row < 5 + fps_size; ++row)
-		gfx.draw_line(5, row, Graphics::ScreenWidth - 5, row, Colors::Blue);
-	gfx.draw_line(5, row, (elapsed) % Graphics::ScreenWidth - 5, row, Colors::Blue);
-	/* ----------------------------------- */
+	
 
 	/* ----------------------------------- */
 	// GUAD_TREE_F size drawing
-	int size = t.size();
-	int rest_size = size % Graphics::ScreenWidth;
-	int num_of_rows = size / Graphics::ScreenWidth;
-	row += 2;
-	for (int x = 0; x < num_of_rows; ++x, ++row)
-		gfx.draw_line(5, row, Graphics::ScreenWidth - 5, row, Colors::Red);
-	gfx.draw_line(5, row, rest_size, row, Colors::Red);
+	cout << t.size() << " ";
 	/* ----------------------------------- */
 
+	/* ----------------------------------- */
+	cout << "time: " << timer.elapsed() << " ms\n";
+		/* ----------------------------------- */
+
 	gfx.EndFrame();
+
+
+
+
 }
-bool done = false;
-bool updating_at_once = true;
+
 void Game::UpdateModel()
 {
-	if (keep_updating == true)
-	{
-		if (updating_at_once == false)
-			test_update_tree(t);
-		else
-			test_update_tree_at_once(t);
-	}
-	
+	test_update_tree(t);
+}
+
+void Game::HandleInput()
+{	
 	if (wnd.mouse.LeftIsPressed())
 	{
 		node_f x(Tpoint<float>((float)wnd.mouse.GetPosX(), (float)wnd.mouse.GetPosY()));
@@ -413,10 +391,6 @@ void Game::UpdateModel()
 		keep_updating = false;
 	if (wnd.kbd.KeyIsPressed(VK_RIGHT))
 		keep_updating = true;
-	if (wnd.kbd.KeyIsPressed(VK_F8))
-		updating_at_once = false;
-	if (wnd.kbd.KeyIsPressed(VK_F9))
-		updating_at_once = true;
 	
 	if (wnd.kbd.KeyIsPressed(VK_F1))
 		g_alignment_weight += 0.1f;

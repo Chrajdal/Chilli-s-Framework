@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include "Graphics.h"
+
 using namespace std;
 using namespace std::chrono;
 

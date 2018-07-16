@@ -6,10 +6,8 @@
 #include "Colors.h"
 #include "utils.h"
 
-#define GMINY 0
-#define GMAXY (Graphics::ScreenHeight - 1)
-#define GMINX 0
-#define GMAXX (Graphics::ScreenWidth - 1)
+class Graphics;
+
 
 class Graphics
 {
@@ -183,3 +181,8 @@ public:
 		}
 	}
 };
+
+float constexpr GMINY = 0;
+float constexpr GMAXY = (Graphics::ScreenHeight - 1);
+float constexpr GMINX = 0;
+float constexpr GMAXX = (Graphics::ScreenWidth - 1);

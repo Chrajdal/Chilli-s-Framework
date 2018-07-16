@@ -430,13 +430,17 @@ void node_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f
 
 void node_f::draw(Graphics & gfx, bool draw_rect) const
 {
-	gfx.PutPixel(m_p.m_x, m_p.m_y, Colors::Gray);
+	//gfx.PutPixel(m_p.m_x, m_p.m_y, Colors::Gray);
+	if (m_p.m_x >= 10 && m_p.m_y >= 10 &&
+		m_p.m_x < Graphics::ScreenWidth - 10 &&
+		m_p.m_y < Graphics::ScreenHeight - 10)
+		gfx.draw_circle((int)m_p.m_x, (int)m_p.m_y, 5, Colors::Gray);
 	if (draw_rect == true)
 	{
-		gfx.draw_line(m_p.m_x, m_p.m_y, m_p.m_x, m_ul_r.m_upleft.m_y, Colors::Green);
-		gfx.draw_line(m_p.m_x, m_p.m_y, m_p.m_x, m_dr_r.m_downright.m_y, Colors::Blue);
-		gfx.draw_line(m_p.m_x, m_p.m_y, m_ul_r.m_upleft.m_x, m_p.m_y, Colors::Yellow);
-		gfx.draw_line(m_p.m_x, m_p.m_y, m_dr_r.m_downright.m_x, m_p.m_y, Colors::Red);
+		gfx.draw_line((int)m_p.m_x, (int)m_p.m_y, (int)m_p.m_x               , (int)m_ul_r.m_upleft.m_y, Colors::Green);
+		gfx.draw_line((int)m_p.m_x, (int)m_p.m_y, (int)m_p.m_x               , (int)m_dr_r.m_downright.m_y, Colors::Blue);
+		gfx.draw_line((int)m_p.m_x, (int)m_p.m_y, (int)m_ul_r.m_upleft.m_x   , (int)m_p.m_y, Colors::Yellow);
+		gfx.draw_line((int)m_p.m_x, (int)m_p.m_y, (int)m_dr_r.m_downright.m_x, (int)m_p.m_y, Colors::Red);
 	}
 
 	if (m_ul != NULL) m_ul->draw(gfx, draw_rect);

@@ -21,6 +21,7 @@
 #include <thread>
 #include <mutex>
 #include <fstream>
+#include <iostream>
 #include "MainWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
@@ -41,8 +42,10 @@ public:
 private:
 	void ComposeFrame();
 	void UpdateModel();
+	void HandleInput();
 	
 private:
 	MainWindow& wnd;
 	Graphics gfx;
+	CTimer m_timer;
 };
