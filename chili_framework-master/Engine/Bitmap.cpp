@@ -136,8 +136,8 @@ void Bitmap::resize(int newwidth, int newheight)
 	if (newwidth == width && newheight == height)
 		return;
 
-	double height_ratio = double(newheight) / double(height);
-	double width_ratio  = double(newwidth)  / double(width);
+	double height_ratio = double(height) / double(newheight);
+	double width_ratio  = double(width)  / double(newwidth);
 
 	Color * tmp = new Color[newwidth * newheight];
 	if (newwidth > width)

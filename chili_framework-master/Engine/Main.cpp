@@ -24,6 +24,9 @@
 
 int WINAPI wWinMain( HINSTANCE hInst,HINSTANCE,LPWSTR pArgs,INT )
 {
+	// AllocConsole();
+	// freopen("CONOUT$", "w", stdout);
+
 	try
 	{
 		MainWindow wnd( hInst,pArgs );		

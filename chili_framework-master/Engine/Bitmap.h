@@ -19,6 +19,9 @@ public:
 	void resize(int newwidth, int newheight);
 	void leave_only_this_color(const Color & color);
 
+
+	inline int get_width(void) const { return width; }
+	inline int get_height(void) const { return height; }
 private:
 	Color* pPixels = nullptr;
 	int width;
