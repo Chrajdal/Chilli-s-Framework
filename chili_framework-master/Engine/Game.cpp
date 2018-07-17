@@ -1,9 +1,6 @@
 #include "Game.h"
 
-//constexpr float GMINY = 0;
-//constexpr float GMAXY = (Graphics::ScreenHeight - 1);
-//constexpr float GMINX = 0;
-//constexpr float GMAXX = (Graphics::ScreenWidth - 1);
+Random rnd;
 
 bool keep_updating = true;
 int vec_size = 100;
@@ -169,7 +166,7 @@ void update_node_at_once(const vector<node_f> & closest_points, node_f & n)
 
 	float alignment_weight = 1.0f;
 	float separation_weight = 1.0f;
-	float cohesion_weight = 1.0f;
+	float cohesion_weight = 10.0f;
 
 	n.m_velocity.x += alignment.x * alignment_weight + separation.x * separation_weight + cohesion.x * cohesion_weight;
 	n.m_velocity.y += alignment.y * alignment_weight + separation.y * separation_weight + cohesion.y * cohesion_weight;
@@ -181,19 +178,18 @@ void test_update_node_at_once(quad_tree_f & t, node_f n, quad_tree_f & nt)
 	if (n.m_dl != NULL)	test_update_node_at_once(t, *n.m_dl, nt);
 	if (n.m_dr != NULL)	test_update_node_at_once(t, *n.m_dr, nt);
 
-	int n_closest_points = g_n;
-	vector<node_f> closest_points;
-	closest_points.reserve(n_closest_points);
-	t.find_n_closest_points(n.m_p, n_closest_points, closest_points);
+	//int n_closest_points = g_n;
+	//vector<node_f> closest_points;
+	//closest_points.reserve(n_closest_points);
+	//t.find_n_closest_points(n.m_p, n_closest_points, closest_points);
+	//update_node_at_once(closest_points, n);
 
-	update_node_at_once(closest_points, n);
-
-	//float length = sqrt(n.m_velocity.x * n.m_velocity.x + n.m_velocity.y * n.m_velocity.y);
-	//if (length >= 5.0f)
-	//{
-	//	n.m_velocity.x /= length;
-	//	n.m_velocity.y /= length;
-	//}
+	float length_sq = n.m_velocity.x * n.m_velocity.x + n.m_velocity.y * n.m_velocity.y;
+	if (length_sq >= 5.0f)
+	{
+		n.m_velocity.x /= length_sq;
+		n.m_velocity.y /= length_sq;
+	}
 
 	//if (n.m_p.m_x >= float(Graphics::ScreenWidth))
 	//	n.m_p.m_x = float((int)(n.m_p.m_x) % Graphics::ScreenWidth);
@@ -216,7 +212,7 @@ void test_update_node_at_once(quad_tree_f & t, node_f n, quad_tree_f & nt)
 }
 void test_update_tree_at_once(quad_tree_f & t)
 {
-	g_n = t.size() / 10;
+	g_n = t.size() / 20;
 	if (g_n == 0)
 		g_n++;
 	quad_tree_f nt;
@@ -275,13 +271,10 @@ void test_update_node(quad_tree_f & t, node_f & n, quad_tree_f & nt)
 		n.m_p.m_y += (float)Graphics::ScreenHeight;
 	}
 	
-	
-
 	if (n.m_ul != NULL)	test_update_node(t, *n.m_ul, nt);
 	if (n.m_ur != NULL)	test_update_node(t, *n.m_ur, nt);
 	if (n.m_dl != NULL)	test_update_node(t, *n.m_dl, nt);
 	if (n.m_dr != NULL)	test_update_node(t, *n.m_dr, nt);
-
 
 	nt.insert(n);
 }
@@ -289,7 +282,7 @@ void test_update_tree(quad_tree_f & t)
 {
 	quad_tree_f nt;
 	if (t.m_root != NULL)
-		test_update_node(t, *t.m_root, nt);
+		test_update_node_at_once(t, *t.m_root, nt);
 	t = nt;
 }
 //-----------------------------------------------------------------------------
@@ -314,30 +307,17 @@ void Game::Go()
 
 	gfx.BeginFrame();
 	UpdateModel();
-	ComposeFrame();
 	HandleInput();
+	ComposeFrame();	
 	
-	
-
-	/* ----------------------------------- */
-	// GUAD_TREE_F size drawing
-	cout << t.size() << " ";
-	/* ----------------------------------- */
-
-	/* ----------------------------------- */
 	cout << "time: " << timer.elapsed() << " ms\n";
-		/* ----------------------------------- */
 
 	gfx.EndFrame();
-
-
-
-
 }
 
 void Game::UpdateModel()
 {
-	test_update_tree(t);
+	test_update_tree_at_once(t);
 }
 
 void Game::HandleInput()
@@ -345,14 +325,14 @@ void Game::HandleInput()
 	if (wnd.mouse.LeftIsPressed())
 	{
 		node_f x(Tpoint<float>((float)wnd.mouse.GetPosX(), (float)wnd.mouse.GetPosY()));
-		x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+		x.m_velocity = _Vec2<float>(rnd.next_float(-5.0f, 5.0f), rnd.next_float(-5.0f, 5.0f));
 		t.insert(x);
 	}
 	
 	if (wnd.mouse.RightIsPressed())
 	{
 		node_f x(Tpoint<float>((float)wnd.mouse.GetPosX(), (float)wnd.mouse.GetPosY()));
-		x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+		x.m_velocity = _Vec2<float>(rnd.next_float(-5.0f, 5.0f), rnd.next_float(-5.0f, 5.0f));
 		t.insert(x);
 	}
 
@@ -360,8 +340,8 @@ void Game::HandleInput()
 	{
 		for (int i = 0; i < 10; ++i)
 		{
-			node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth), random_between(0.0f, (float)Graphics::ScreenHeight)));
-			x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+			node_f x(Tpoint<float>(rnd.next_float(0.0f, (float)Graphics::ScreenWidth), rnd.next_float(0.0f, (float)Graphics::ScreenHeight)));
+			x.m_velocity = _Vec2<float>(rnd.next_float(-5.0f, 5.0f), rnd.next_float(-5.0f, 5.0f));
 			t.insert(x);
 		}
 
@@ -369,8 +349,8 @@ void Game::HandleInput()
 		{
 			for (int i = 0; i < 10000; ++i)
 			{
-				node_f x(Tpoint<float>(random_between(0.0f, (float)Graphics::ScreenWidth), random_between(0.0f, (float)Graphics::ScreenHeight)));
-				x.m_velocity = _Vec2<float>(random_between(-5.0f, 5.0f), random_between(-5.0f, 5.0f));
+				node_f x(Tpoint<float>(rnd.next_float(0.0f, (float)Graphics::ScreenWidth), rnd.next_float(0.0f, (float)Graphics::ScreenHeight)));
+				x.m_velocity = _Vec2<float>(rnd.next_float(-5.0f, 5.0f), rnd.next_float(-5.0f, 5.0f));
 				t.insert(x);
 			}
 		}
@@ -410,6 +390,8 @@ void Game::HandleInput()
 
 void Game::ComposeFrame()
 {
+	cout << t.size() << " ";
+
 	t.draw(gfx, draw_rect_bool);
 }
 //-----------------------------------------------------------------------------

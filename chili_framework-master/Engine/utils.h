@@ -92,11 +92,23 @@ public:
 	{
 		start = chrono::system_clock::now();
 	}
+
+	//inline void start(void)
+	//{
+	//}
 	double elapsed(void) const
 	{
 		return (double)(chrono::duration_cast<chrono::milliseconds>
 			(chrono::system_clock::now() - start)).count();
 	}
+	milliseconds elapsed_ms(void) const
+	{
+		return (chrono::duration_cast<chrono::milliseconds>(system_clock::now() - start));
+	}
+	//nanoseconds elapsed_ns(void) const
+	//{
+	//	return 9ns;//return (chrono::duration_cast<chrono::nanoseconds>(system_clock::now() - start));
+	//}
 private:
 	chrono::time_point<chrono::system_clock> start;
 };

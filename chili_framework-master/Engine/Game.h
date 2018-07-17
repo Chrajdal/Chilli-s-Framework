@@ -25,6 +25,7 @@
 #include "MainWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "Random.h"
 
 #include "node.h"
 #include "node_f.h"
