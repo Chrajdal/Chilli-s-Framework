@@ -107,6 +107,16 @@ Color Bitmap::GetPixel(int x, int y) const
 	return pPixels[y * width + x];
 }
 
+Color & Bitmap::at(int x, int y)
+{
+	return pPixels[x + y * width];
+}
+
+const Color & Bitmap::at(int x, int y) const
+{
+	return pPixels[x + y * width];
+}
+
 void Bitmap::Draw(Graphics & gfx, int x, int y, const Color & alpha) const
 {
 	for (int i = 0; i < width; ++i)
@@ -129,6 +139,130 @@ void Bitmap::leave_only_this_color(const Color & color)
 		for (int j = 0; j < height; ++j)
 			if (pPixels[j*width + i] != color)
 				pPixels[j*width + i] = Colors::White;
+}
+
+void Bitmap::convert_to_gray_scale(void)
+{
+	for (int i = 0; i < width; ++i)
+		for (int j = 0; j < height; ++j)
+		{
+			int r = pPixels[i + j * width].GetR();
+			int g = pPixels[i + j * width].GetG();
+			int b = pPixels[i + j * width].GetB();
+			int intensity = (0.2126 * r + 0.7512 * g + 0.0722 * b);
+
+			pPixels[i + j * width].SetR(intensity);
+			pPixels[i + j * width].SetG(intensity);
+			pPixels[i + j * width].SetB(intensity);
+		}
+}
+
+void Bitmap::convert_to_gray_scale2(void)
+{
+	for (int i = 0; i < width; ++i)
+		for (int j = 0; j < height; ++j)
+		{
+			int r = pPixels[i + j * width].GetR();
+			int g = pPixels[i + j * width].GetG();
+			int b = pPixels[i + j * width].GetB();
+			int ncolor = (r+g+b) / 3;
+
+			pPixels[i + j * width].SetR(ncolor);
+			pPixels[i + j * width].SetG(ncolor);
+			pPixels[i + j * width].SetB(ncolor);
+		}
+}
+
+void Bitmap::convert_to_gray_scale3(void)
+{
+	for (int i = 0; i < width; ++i)
+		for (int j = 0; j < height; ++j)
+		{
+			int r = pPixels[i + j * width].GetR();
+			int g = pPixels[i + j * width].GetG();
+			int b = pPixels[i + j * width].GetB();
+			int ncolor = (std::max({ r, g, b }) + std::min({ r, g, b })) / 2;
+
+			pPixels[i + j * width].SetR(ncolor);
+			pPixels[i + j * width].SetG(ncolor);
+			pPixels[i + j * width].SetB(ncolor);
+		}
+}
+
+void Bitmap::convert_to_gray_scale4(void)
+{
+	for (int i = 0; i < width; ++i)
+		for (int j = 0; j < height; ++j)
+		{
+			int r = pPixels[i + j * width].GetR();
+			int g = pPixels[i + j * width].GetG();
+			int b = pPixels[i + j * width].GetB();
+			int intensity = min({ r,g,b });
+
+			pPixels[i + j * width].SetR(intensity);
+			pPixels[i + j * width].SetG(intensity);
+			pPixels[i + j * width].SetB(intensity);
+		}
+}
+
+void Bitmap::convert_to_gray_scale5(void)
+{
+	for (int i = 0; i < width; ++i)
+		for (int j = 0; j < height; ++j)
+		{
+			int r = pPixels[i + j * width].GetR();
+			int g = pPixels[i + j * width].GetG();
+			int b = pPixels[i + j * width].GetB();
+			int intensity = max({ r,g,b });
+
+			pPixels[i + j * width].SetR(intensity);
+			pPixels[i + j * width].SetG(intensity);
+			pPixels[i + j * width].SetB(intensity);
+		}
+}
+
+void Bitmap::apply_dithering(void)
+{
+	for (int j = 0; j < height-1; ++j)
+		for (int i = 1; i < width-1; ++i)
+		{
+			double factor = 1;
+			int oldr = pPixels[i + j * width].GetR();
+			int oldg = pPixels[i + j * width].GetG();
+			int oldb = pPixels[i + j * width].GetB();
+
+			int newr = std::round(factor * oldr / 255) * (255 / factor);
+			int newg = std::round(factor * oldg / 255) * (255 / factor);
+			int newb = std::round(factor * oldb / 255) * (255 / factor);
+
+			double errr = oldr - newr;
+			double errg = oldg - newg;
+			double errb = oldb - newb;
+
+			Color c = at(i + 1, j);
+			c.SetR(c.GetR() + errr * 7 / 16.0);
+			c.SetG(c.GetG() + errr * 7 / 16.0);
+			c.SetB(c.GetB() + errr * 7 / 16.0);
+			at(i + 1, j) = c;
+
+			c = at(i - 1, j + 1);
+			c.SetR(c.GetR() + errr * 3 / 16.0);
+			c.SetG(c.GetG() + errr * 3 / 16.0);
+			c.SetB(c.GetB() + errr * 3 / 16.0);
+			at(i - 1, j+1) = c;
+			
+			c = at(i, j + 1);
+			c.SetR(c.GetR() + errr * 5 / 16.0);
+			c.SetG(c.GetG() + errr * 5 / 16.0);
+			c.SetB(c.GetB() + errr * 5 / 16.0);
+			at(i, j + 1) = c;
+
+			c = at(i + 1, j + 1);
+			c.SetR(c.GetR() + errr * 1 / 16.0);
+			c.SetG(c.GetG() + errr * 1 / 16.0);
+			c.SetB(c.GetB() + errr * 1 / 16.0);
+			at(i + 1, j + 1) = c;
+		}
 }
 
 void Bitmap::resize(int newwidth, int newheight)

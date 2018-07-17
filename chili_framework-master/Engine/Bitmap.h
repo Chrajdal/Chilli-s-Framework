@@ -18,8 +18,18 @@ public:
 	void DrawPart(Graphics & gfx, int x, int y,int fromx, int fromy, int tox, int toy, const Color & alpha) const;
 	void resize(int newwidth, int newheight);
 	void leave_only_this_color(const Color & color);
+	void convert_to_gray_scale(void);
+	void convert_to_gray_scale2(void);
+	void convert_to_gray_scale3(void);
+	void convert_to_gray_scale4(void);
+	void convert_to_gray_scale5(void);
+	void apply_dithering(void);
 
+	Color & at(int x, int y);
+	const Color & at(int x, int y) const;
 
+	
+	inline Color * data(void) const { return pPixels;}
 	inline int get_width(void) const { return width; }
 	inline int get_height(void) const { return height; }
 private:
