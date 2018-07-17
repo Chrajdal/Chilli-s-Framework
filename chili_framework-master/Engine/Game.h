@@ -35,6 +35,7 @@ public:
 private:
 	void ComposeFrame();
 	void UpdateModel();
+	void HandleInput();
 	
 private:
 	MainWindow& wnd;
