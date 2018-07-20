@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include "Graphics.h"
+#include "Colors.h"
+
 using namespace std;
 using namespace std::chrono;
 
@@ -52,16 +55,19 @@ struct Tpoint
 template<typename T>
 struct Trect
 {
-	Trect(const Tpoint<T> & upleft = {}, const Tpoint<T> & downright = {})
+	constexpr Trect(const T & x1 = {}, const T & y1 = {}, const T & x2 = {}, const T & y2 = {})
+		: m_upleft(x1,y1), m_downright(x2, y2)
+	{}
+	constexpr Trect(const Tpoint<T> & upleft = {}, const Tpoint<T> & downright = {})
 		: m_upleft(upleft), m_downright(downright)
 	{}
-	Trect(const Trect<T> & src)
+	constexpr Trect(const Trect<T> & src)
 		: m_upleft(src.m_upleft), m_downright(src.m_downright)
 	{}
-	Trect(const Trect<T> && src)
+	constexpr Trect(const Trect<T> && src)
 		: m_upleft(move(src.m_upleft)), m_downright(move(src.m_downright))
 	{}
-	Trect<T> & operator = (const Trect<T> & src)
+	constexpr Trect<T> & operator = (const Trect<T> & src)
 	{
 		if (this == &src)
 			return *this;
@@ -69,7 +75,7 @@ struct Trect
 		m_downright = src.m_downright;
 		return *this;
 	}
-	Trect<T> & operator = (const Trect<T> && src)
+	constexpr Trect<T> & operator = (const Trect<T> && src)
 	{
 		if (this == &src)
 			return *this;
@@ -79,6 +85,14 @@ struct Trect
 	}
 	Tpoint<T> m_upleft;
 	Tpoint<T> m_downright;
+
+	void draw(Graphics & gfx, const Color & c) const
+	{
+		gfx.draw_line_s(m_upleft.m_x, m_upleft.m_y, m_downright.m_x, m_upleft.m_y, c);
+		gfx.draw_line_s(m_upleft.m_x, m_upleft.m_y, m_upleft.m_x, m_downright.m_y, c);
+		gfx.draw_line_s(m_upleft.m_x, m_downright.m_y, m_downright.m_x, m_downright.m_y, c);
+		gfx.draw_line_s(m_downright.m_x, m_upleft.m_y, m_downright.m_x, m_downright.m_y, c);
+	}
 };
 //-----------------------------------------------------------------------------
 

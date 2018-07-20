@@ -24,6 +24,11 @@
 #include "MainWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "Bitmap.h"
+#include "Font.h"
+#include "utils.h"
+#include "Random.h"
+#include "Vec3.h"
 
 class Game
 {
