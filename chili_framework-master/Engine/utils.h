@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include <cmath>
+#include "Colors.h"
 using namespace std;
 using namespace std::chrono;
 
@@ -10,16 +12,16 @@ using namespace std::chrono;
 template<typename T>
 struct Tpoint
 {
-	Tpoint(const T & _x = 0, const T & _y = 0)
+	constexpr Tpoint(const T & _x = 0, const T & _y = 0)
 		: m_x(_x), m_y(_y)
 	{}
-	Tpoint(const Tpoint<T> & src)
+	constexpr Tpoint(const Tpoint<T> & src)
 		: m_x(src.m_x), m_y(src.m_y)
 	{}
-	Tpoint(const Tpoint<T> && src)
+	constexpr Tpoint(const Tpoint<T> && src)
 		: m_x(move(src.m_x)), m_y(move(src.m_y))
 	{}
-	Tpoint<T> & operator = (const Tpoint<T> & src)
+	constexpr Tpoint<T> & operator = (const Tpoint<T> & src)
 	{
 		if (this == &src)
 			return *this;
@@ -27,7 +29,7 @@ struct Tpoint
 		m_y = src.m_y;
 		return *this;
 	}
-	Tpoint<T> & operator = (const Tpoint<T> && src)
+	constexpr Tpoint<T> & operator = (const Tpoint<T> && src)
 	{
 		if (this == &src)
 			return *this;
@@ -52,16 +54,16 @@ struct Tpoint
 template<typename T>
 struct Trect
 {
-	Trect(const Tpoint<T> & upleft = {}, const Tpoint<T> & downright = {})
+	constexpr Trect(const Tpoint<T> & upleft = {}, const Tpoint<T> & downright = {})
 		: m_upleft(upleft), m_downright(downright)
 	{}
-	Trect(const Trect<T> & src)
+	constexpr Trect(const Trect<T> & src)
 		: m_upleft(src.m_upleft), m_downright(src.m_downright)
 	{}
-	Trect(const Trect<T> && src)
+	constexpr Trect(const Trect<T> && src)
 		: m_upleft(move(src.m_upleft)), m_downright(move(src.m_downright))
 	{}
-	Trect<T> & operator = (const Trect<T> & src)
+	constexpr Trect<T> & operator = (const Trect<T> & src)
 	{
 		if (this == &src)
 			return *this;
@@ -69,7 +71,7 @@ struct Trect
 		m_downright = src.m_downright;
 		return *this;
 	}
-	Trect<T> & operator = (const Trect<T> && src)
+	constexpr Trect<T> & operator = (const Trect<T> && src)
 	{
 		if (this == &src)
 			return *this;
@@ -114,4 +116,9 @@ double sq_distance(const Tpoint<float> & a, const Tpoint<float> & b);
 double sq_distance(const Tpoint<double> & a, const Tpoint<double> & b);
 void gen_random(string & str, const int len);
 void gen_randascii(string & str, const int len);
+//-----------------------------------------------------------------------------
+vector<double> rgb_to_hsv(const Color & c);
+Color hsv_to_rgb(const vector<double> & src);
+Color interpolation(const Color & a, const Color & b, double factor);
+vector<Color> generate_colors(const Color & start, const Color & end, int number_of_colors);
 //-----------------------------------------------------------------------------
