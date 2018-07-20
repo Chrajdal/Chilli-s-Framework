@@ -61,7 +61,11 @@ private:
 public:
 	static constexpr int ScreenWidth  = 1000;
 	static constexpr int ScreenHeight = 1000;
-		
+	
+	void PutPixel_s(int x, int y, const Color & c);
+	void draw_line_s(int x1, int y1, int x2, int y2, const Color & c);
+	void draw_circle_s(int _x, int _y, int radius, const Color & c);
+
 	// Bresenham's line algorithm
 	void draw_line(int x1, int y1, int x2, int y2, const Color & c);
 
