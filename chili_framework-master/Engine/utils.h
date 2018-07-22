@@ -13,6 +13,9 @@ using namespace std::chrono;
 template<typename T>
 struct Cvector2
 {
+	Cvector2(void)
+		: m_x(0.0), m_y(0.0)
+	{}
 	Cvector2(const T & _x, const T & _y)
 		: m_x(_x), m_y(_y)
 	{}
@@ -49,7 +52,7 @@ struct Cvector2
 
 	inline Cvector2<double> operator - (const Cvector2<T> & rhs) const
 	{
-		return std::move(Cvector2<double>(m_x - rhs.m_x, m_y - rhs.m_y));
+		return Cvector2<double>(m_x - rhs.m_x, m_y - rhs.m_y);
 	}
 	inline Cvector2<double> & operator -= (const Cvector2<T> & rhs)
 	{
@@ -60,7 +63,7 @@ struct Cvector2
 
 	inline Cvector2<double> operator + (const Cvector2<T> & rhs) const
 	{
-		return std::move(Cvector2<double>(m_x + rhs.m_x, m_y + rhs.m_y));
+		return Cvector2<double>(m_x + rhs.m_x, m_y + rhs.m_y);
 	}
 	inline Cvector2<double> & operator += (const Cvector2<T> & rhs)
 	{
@@ -71,7 +74,7 @@ struct Cvector2
 
 	inline Cvector2<double> operator * (const Cvector2<T> & rhs) const
 	{
-		return std::move(Cvector2<double>(m_x * rhs.m_x, m_y * rhs.m_y));
+		return Cvector2<double>(m_x * rhs.m_x, m_y * rhs.m_y);
 	}
 	inline Cvector2<double> & operator *= (const Cvector2<T> & rhs)
 	{
@@ -92,7 +95,7 @@ struct Cvector2
 
 	inline Cvector2<double> operator / (const Cvector2<T> & rhs) const
 	{
-		return std::move(Cvector2<double>(m_x / rhs.m_x, m_y / rhs.m_y));
+		return Cvector2<double>(m_x / rhs.m_x, m_y / rhs.m_y);
 	}
 	inline Cvector2<double> & operator /= (const Cvector2<T> & rhs)
 	{
@@ -113,12 +116,14 @@ struct Cvector2
 
 	inline T magnitude(void) const
 	{
-		return sqrt((m_x*m_x) + (m_y*m_y));
+		return std::sqrt((m_x*m_x) + (m_y*m_y));
 	}
 
 	inline Cvector2<T> & normalize(void)
 	{
-		return *this / magnitude();
+		m_x /= magnitude();
+		m_y /= magnitude();
+		return *this;
 	}
 
 	T m_x;
