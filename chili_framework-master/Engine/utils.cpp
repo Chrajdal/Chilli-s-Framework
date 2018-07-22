@@ -15,22 +15,22 @@ double random_between(const double & min, const double & max)
 	return (max - min) * ((double)rand() / (double)RAND_MAX) + min;
 }
 
-long sq_distance(const Tpoint<int> & a, const Tpoint<int> & b)
+long sq_distance(const Cvector2<int> & a, const Cvector2<int> & b)
 {
 	return (long)((a.m_x - b.m_x) * (long)(a.m_x - b.m_x))
 		+ (long)((a.m_y - b.m_y) * (long)(a.m_y - b.m_y));
 }
-long long sq_distance(const Tpoint <long> & a, const Tpoint<long> & b)
+long long sq_distance(const Cvector2 <long> & a, const Cvector2<long> & b)
 {
 	return (long)((a.m_x - b.m_x) * (long)(a.m_x - b.m_x))
 		+ (long)((a.m_y - b.m_y) * (long)(a.m_y - b.m_y));
 }
-double sq_distance(const Tpoint<float> & a, const Tpoint<float> & b)
+double sq_distance(const Cvector2<float> & a, const Cvector2<float> & b)
 {
 	return (double)((a.m_x - b.m_x) * (double)(a.m_x - b.m_x))
 		+ (double)((a.m_y - b.m_y) * (double)(a.m_y - b.m_y));
 }
-double sq_distance(const Tpoint<double> & a, const Tpoint<double> & b)
+double sq_distance(const Cvector2<double> & a, const Cvector2<double> & b)
 {
 	return (double)((a.m_x - b.m_x) * (double)(a.m_x - b.m_x))
 		+ (double)((a.m_y - b.m_y) * (double)(a.m_y - b.m_y));

@@ -583,3 +583,60 @@ void Graphics::draw_circle(int _x, int _y, int radius, const Color & c)
 		}
 	}
 }
+
+void Graphics::draw_circle_filled(int x, int y, int r, const Color & c)
+{
+	double sinus = 0.70710678118;
+	//This is the distance on the axis from sin(90) to sin(45). 
+	int range = r / (2 * sinus);
+	for (int i = r; i >= range; --i)
+	{
+		int j = sqrt(r * r - i * i);
+		for (int k = -j; k <= j; k++)
+		{
+			//We draw all the 4 sides at the same time.
+			PutPixel(x - k, y + i, c);
+			PutPixel(x - k, y - i, c);
+			PutPixel(x + i, y + k, c);
+			PutPixel(x - i, y - k, c);
+		}
+	}
+	//To fill the circle we draw the circumscribed square.
+	range = r * sinus;
+	for (int i = x - range + 1; i < x + range; i++)
+	{
+		for (int j = y - range + 1; j < y + range; j++)
+		{
+			PutPixel(i, j, c);
+		}
+	}
+}
+
+void Graphics::draw_circle_filled_s(int x, int y, int r, const Color & c)
+
+{
+	double sinus = 0.70710678118;
+	//This is the distance on the axis from sin(90) to sin(45). 
+	int range = r / (2 * sinus);
+	for (int i = r; i >= range; --i)
+	{
+		int j = sqrt(r * r - i * i);
+		for (int k = -j; k <= j; k++)
+		{
+			//We draw all the 4 sides at the same time.
+			PutPixel_s(x - k, y + i, c);
+			PutPixel_s(x - k, y - i, c);
+			PutPixel_s(x + i, y + k, c);
+			PutPixel_s(x - i, y - k, c);
+		}
+	}
+	//To fill the circle we draw the circumscribed square.
+	range = r * sinus;
+	for (int i = x - range + 1; i < x + range; i++)
+	{
+		for (int j = y - range + 1; j < y + range; j++)
+		{
+			PutPixel_s(i, j, c);
+		}
+	}
+}

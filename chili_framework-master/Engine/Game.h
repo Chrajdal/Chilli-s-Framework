@@ -21,6 +21,7 @@
 #include <thread>
 #include <mutex>
 #include <fstream>
+#include <memory>
 #include "MainWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
