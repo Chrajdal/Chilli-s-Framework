@@ -48,9 +48,8 @@ public:
 class spring2d
 {
 public:
-	spring2d(spring_node &_a, spring_node & _b, double _rest_length = 20, double _k = 0.15)
+	spring2d(double _rest_length = 20, double _k = 0.1)
 		:
-		a(_a), b(_b),
 		rest_length(_rest_length),
 		k(_k)
 	{
@@ -59,7 +58,7 @@ public:
 	{
 	}
 
-	void connect(spring_node & _a, spring_node & _b)
+	void connect(vector<spring_node &> _a, vector<spring_node &> _b)
 	{
 		a = _a;
 		b = _b;
@@ -67,39 +66,53 @@ public:
 
 	Cvector2<double> calculate_force(void) const
 	{
-		Cvector2<double> force = a.position - b.position;
-		double distance = force.magnitude();
-		double stretch = distance - rest_length;
-
-		force *= -k * (stretch);
-		force.normalize();
-
-		//force += (force / distance) * intensity - ((b.velocity - a.velocity) * 40000);
-
-		return force;
+		Cvector2<double> result_force(0, 0);
+		for (int i = 0; i < a.size(); ++i)
+		{
+			for (int j = 0; j < b.size(); ++j)
+			{
+				Cvector2<double> force = a[i].position - b[j].position;
+				double distance = force.magnitude();
+				double stretch = distance - rest_length;
+				force.normalize();
+				force *= -k * (stretch);
+				
+				result_force += force;
+			}
+		}
+		return result_force;
 	}
 
 	void draw(Graphics & gfx) const
 	{
-		double l = (a.position - b.position).magnitude();
-		if (l > 2000)
-			return;
-		if (l < rest_length)
-			gfx.draw_line_s(a.position.m_x, a.position.m_y, b.position.m_x, b.position.m_y, Colors::Red);
-		else
-			gfx.draw_line_s(a.position.m_x, a.position.m_y, b.position.m_x, b.position.m_y, Colors::Blue);
+		for (int i = 0; i < a.size(); ++i)
+		{
+			for (int j = 0; j < b.size(); ++j)
+			{
+				double l = (a[i].position - b[j].position).magnitude();
+				if (l > 2000)
+					return;
+				if (l < rest_length)
+					gfx.draw_line_s(a[i].position.m_x, a[i].position.m_y, b[j].position.m_x, b[j].position.m_y, Colors::Red);
+				else
+					gfx.draw_line_s(a[i].position.m_x, a[i].position.m_y, b[j].position.m_x, b[j].position.m_y, Colors::Blue);
+			}
+		}
+		
 	}
 private:
-	spring_node & a;
-	spring_node & b;
+	vector<spring_node &> a;
+	vector<spring_node &> b;
 	double rest_length;
 	double k;
 };
 
-vector<spring_node> spring_nodes;
-vector<spring2d> springs;
+//vector<spring_node> spring_nodes;
+//vector<spring2d> springs;
 int g_count = 0;
 
+vector<vector<spring_node>> nodes;
+vector<vector<spring2d>> springs;
 Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
@@ -107,19 +120,29 @@ Game::Game(MainWindow & wnd)
 {
 	srand(unsigned(time(0)));
 
-	for (int i = 0; i < 25; ++i)
+	for (int i = 0; i <  20; ++i)
 	{
-		spring_nodes.push_back(spring_node());
-		spring_nodes[i].position = Cvector2<double>(20 + 20.05 * i, 150);
-		spring_nodes[i].velocity = Cvector2<double>(0.0, 0.0);
-		spring_nodes[i].unlock();
+		nodes.push_back(vector<spring_node>());
+		for (int j = 0; j < 20; ++j)
+		{
+			nodes[i].push_back(spring_node());
+			nodes[i][j].position = Cvector2<double>(50 + 20.1 * i, 15 + 25.2*j);
+			nodes[i][j].velocity = Cvector2<double>(0.0, 0.0);
+			nodes[i][j].unlock();
+		}
 	}
-	for (int i = 0; i < spring_nodes.size() - 1; ++i)
-		springs.push_back(spring2d(spring_nodes[i], spring_nodes[i + 1]));
-	
-	spring_nodes[0].lock();
-	spring_nodes[spring_nodes.size() - 1].lock();
-	spring_nodes[spring_nodes.size()/2].lock();
+	//for (int i = 0; i < nodes.size() - 1; ++i)
+	//{
+	//	springs.push_back(vector<spring2d>());
+	//	for (int j = 0; j < nodes[i].size() - 1; ++j)
+	//	{
+	//		springs[i].push_back(spring2d(nodes[i][j], nodes[i + 1][j]));
+	//		springs[i].push_back(spring2d(nodes[i][j], nodes[i][j+1]));
+	//	}
+	//}
+		
+	for (int i = 0; i < nodes[0].size(); ++i)
+		nodes[0][i].lock();
 }
 
 void Game::Go()
@@ -149,27 +172,34 @@ void Game::UpdateModel()
 {
 	// apply string force
 	//cout << "g_count: " << g_count << "\n";
-	vector<Cvector2<double>> forces;
+	vector<vector<Cvector2<double>>> forces;
 	for (int i = 0; i < springs.size(); ++i)
 	{
-		forces.push_back(springs[i].calculate_force());
+		forces.push_back(vector<Cvector2<double>>());
+		for (int j = 0; j < springs[i].size(); ++j)
+			forces[i].push_back(springs[i][j].calculate_force());
 	
 		//cout << "i: " << i << ", force = (" << forces[i].m_x << ", " << forces[i].m_y << ")";
 		//cout << " a.pos = (" << spring_nodes[i].position.m_x << ", " << spring_nodes[i].position.m_y <<
 		//	"), a.vel = (" << spring_nodes[i].velocity.m_x << ", " << spring_nodes[i].velocity.m_y << ")";
 		//cout << "\n";
 	}
-	for (int i = 0; i < springs.size(); ++i)
+	for (int i = 0; i < springs.size()-1; ++i)
 	{
-		spring_nodes[i].apply_force(forces[i]);
-		forces[i] *= (-1);
-		spring_nodes[i + 1].apply_force(forces[i]);
+		for (int j = 0; j < springs[j].size()-1; ++j)
+		{
+			//nodes[i][j].apply_force(forces[i][j]);
+			//forces[i][j] *= (-1);
+			//nodes[i + 1][j].apply_force(forces[i][j]);
+			//nodes[i][j+1].apply_force(forces[i][j]);
+		}
 	}
 	//cout << string(50, '*') << "\n";
 
 	// apply gravity
-	for (auto & i : spring_nodes)
-		i.apply_force({ 0.0, 0.1 });
+	for (auto & i : nodes)
+		for (auto & j : i)
+			j.apply_force({ 0.0, 1 });
 
 	//std::this_thread::sleep_for(50ms);
 }
@@ -178,8 +208,10 @@ void Game::UpdateModel()
 void Game::ComposeFrame()
 {
 	for (const auto & i : springs)
-		i.draw(gfx);
+		for (const auto & j : i)
+			j.draw(gfx);
 
-	for (const auto & i : spring_nodes)
-		i.draw(gfx);
+	for (auto & i : nodes)
+		for (auto & j : i)
+			j.draw(gfx);
 }
