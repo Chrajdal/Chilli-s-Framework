@@ -1,6 +1,4 @@
 #include "Game.h"
-#include "Bitmap.h"
-#include "Font.h"
 
 Game::Game(MainWindow & wnd)
 	:

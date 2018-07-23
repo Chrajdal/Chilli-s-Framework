@@ -62,6 +62,7 @@ public:
 	static constexpr int ScreenWidth  = 1000;
 	static constexpr int ScreenHeight = 1000;
 	
+	// safer but slower render functions
 	void PutPixel_s(int x, int y, const Color & c);
 
 	void draw_line_s(int x1, int y1, int x2, int y2, const Color & c);
