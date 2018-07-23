@@ -343,6 +343,129 @@ std::wstring Graphics::Exception::GetExceptionType() const
 }
 
 // my own functions:
+void Graphics::PutPixel_s(int x, int y, const Color & c)
+{
+	if ((x >= 0) && (x < int(Graphics::ScreenWidth)) &&
+		(y >= 0) && (y < int(Graphics::ScreenHeight)))
+		pSysBuffer[Graphics::ScreenWidth * y + x] = c;
+}
+
+void Graphics::draw_line_s(int x1, int y1, int x2, int y2, const Color & c)
+{
+	int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
+	dx = x2 - x1;
+	dy = y2 - y1;
+	dx1 = (int)fabs(dx);
+	dy1 = (int)fabs(dy);
+	px = 2 * dy1 - dx1;
+	py = 2 * dx1 - dy1;
+	if (dy1 <= dx1)
+	{
+		if (dx >= 0)
+		{
+			x = x1;
+			y = y1;
+			xe = x2;
+		}
+		else
+		{
+			x = x2;
+			y = y2;
+			xe = x1;
+		}
+		PutPixel_s(x, y, c);
+		for (i = 0; x<xe; i++)
+		{
+			x = x + 1;
+			if (px<0)
+			{
+				px = px + 2 * dy1;
+			}
+			else
+			{
+				if ((dx<0 && dy<0) || (dx>0 && dy>0))
+				{
+					y = y + 1;
+				}
+				else
+				{
+					y = y - 1;
+				}
+				px = px + 2 * (dy1 - dx1);
+			}
+			PutPixel_s(x, y, c);
+		}
+	}
+	else
+	{
+		if (dy >= 0)
+		{
+			x = x1;
+			y = y1;
+			ye = y2;
+		}
+		else
+		{
+			x = x2;
+			y = y2;
+			ye = y1;
+		}
+		PutPixel_s(x, y, c);
+		for (i = 0; y<ye; i++)
+		{
+			y = y + 1;
+			if (py <= 0)
+			{
+				py = py + 2 * dx1;
+			}
+			else
+			{
+				if ((dx<0 && dy<0) || (dx>0 && dy>0))
+				{
+					x = x + 1;
+				}
+				else
+				{
+					x = x - 1;
+				}
+				py = py + 2 * (dx1 - dy1);
+			}
+			PutPixel_s(x, y, c);
+		}
+	}
+}
+
+void Graphics::draw_circle_s(int _x, int _y, int radius, const Color & c)
+{
+	int x = radius - 1;
+	int y = 0;
+	int dx = 1;
+	int dy = 1;
+	int err = dx - (radius << 1);
+	while (x >= y)
+	{
+		PutPixel_s(_x + x, _y + y, c);
+		PutPixel_s(_x + y, _y + x, c);
+		PutPixel_s(_x - y, _y + x, c);
+		PutPixel_s(_x - x, _y + y, c);
+		PutPixel_s(_x - x, _y - y, c);
+		PutPixel_s(_x - y, _y - x, c);
+		PutPixel_s(_x + y, _y - x, c);
+		PutPixel_s(_x + x, _y - y, c);
+		if (err <= 0)
+		{
+			y++;
+			err += dy;
+			dy += 2;
+		}
+		if (err > 0)
+		{
+			x--;
+			dx += 2;
+			err += (-radius << 1) + dx;
+		}
+	}
+}
 
 void Graphics::draw_line(int x1, int y1, int x2, int y2, const Color & c)
 {
@@ -457,6 +580,63 @@ void Graphics::draw_circle(int _x, int _y, int radius, const Color & c)
 			x--;
 			dx += 2;
 			err += (-radius << 1) + dx;
+		}
+	}
+}
+
+void Graphics::draw_circle_filled(int x, int y, int r, const Color & c)
+{
+	double sinus = 0.70710678118;
+	//This is the distance on the axis from sin(90) to sin(45). 
+	int range = r / (2 * sinus);
+	for (int i = r; i >= range; --i)
+	{
+		int j = sqrt(r * r - i * i);
+		for (int k = -j; k <= j; k++)
+		{
+			//We draw all the 4 sides at the same time.
+			PutPixel(x - k, y + i, c);
+			PutPixel(x - k, y - i, c);
+			PutPixel(x + i, y + k, c);
+			PutPixel(x - i, y - k, c);
+		}
+	}
+	//To fill the circle we draw the circumscribed square.
+	range = r * sinus;
+	for (int i = x - range + 1; i < x + range; i++)
+	{
+		for (int j = y - range + 1; j < y + range; j++)
+		{
+			PutPixel(i, j, c);
+		}
+	}
+}
+
+void Graphics::draw_circle_filled_s(int x, int y, int r, const Color & c)
+
+{
+	double sinus = 0.70710678118;
+	//This is the distance on the axis from sin(90) to sin(45). 
+	int range = r / (2 * sinus);
+	for (int i = r; i >= range; --i)
+	{
+		int j = sqrt(r * r - i * i);
+		for (int k = -j; k <= j; k++)
+		{
+			//We draw all the 4 sides at the same time.
+			PutPixel_s(x - k, y + i, c);
+			PutPixel_s(x - k, y - i, c);
+			PutPixel_s(x + i, y + k, c);
+			PutPixel_s(x - i, y - k, c);
+		}
+	}
+	//To fill the circle we draw the circumscribed square.
+	range = r * sinus;
+	for (int i = x - range + 1; i < x + range; i++)
+	{
+		for (int j = y - range + 1; j < y + range; j++)
+		{
+			PutPixel_s(i, j, c);
 		}
 	}
 }
