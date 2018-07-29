@@ -18,9 +18,7 @@ public:
 		const Trect<float> m_downleft_rect = {},
 		const Trect<float> m_downright_rect = {});
 	node_f(const node_f & src);
-	node_f(const node_f && src);
 	node_f & operator = (const node_f & src);
-	node_f & operator = (const node_f && src);
 	~node_f(void);
 	void insert(const Tpoint<float> & p, const node_f * parent);
 	void insert(const node_f & p, const node_f * parent);

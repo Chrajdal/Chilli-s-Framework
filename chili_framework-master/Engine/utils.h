@@ -113,7 +113,8 @@ private:
 	chrono::time_point<chrono::system_clock> start;
 };
 //-----------------------------------------------------------------------------
-
+template<typename T>
+void draw_rect(Graphics & gfx, const Trect<T> & rect, const Color & c = Colors::Cyan);
 //-----------------------------------------------------------------------------
 int random_int(int min, int max);
 float random_between(const float & min, const float & max);

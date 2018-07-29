@@ -54,42 +54,6 @@ node_f & node_f::operator = (const node_f & src)
 	return *this;
 }
 
-node_f::node_f(const node_f && src)
-	:m_p(move(src.m_p)),
-	m_ul_r(move(src.m_ul_r)),
-	m_ur_r(move(src.m_ur_r)),
-	m_dl_r(move(src.m_dl_r)),
-	m_dr_r(move(src.m_dr_r)),
-	m_velocity(move(src.m_velocity)),
-	m_ul(src.m_ul), m_ur(src.m_ur), m_dl(src.m_dl), m_dr(src.m_dr)
-{
-}
-
-node_f & node_f::operator = (const node_f && src)
-{
-	if (this == &src)
-		return *this;
-
-	m_p = move(src.m_p);
-	m_ul_r = move(src.m_ul_r);
-	m_ur_r = move(src.m_ur_r);
-	m_dl_r = move(src.m_dl_r);
-	m_dr_r = move(src.m_dr_r);
-	m_velocity = move(src.m_velocity);
-
-	delete m_ul; m_ul = NULL;
-	delete m_ur; m_ur = NULL;
-	delete m_dl; m_dl = NULL;
-	delete m_dr; m_dr = NULL;
-
-	m_ul = src.m_ul;
-	m_ur = src.m_ur;
-	m_dl = src.m_dl;
-	m_dr = src.m_dr;
-
-	return *this;
-}
-
 node_f::~node_f(void)
 {
 	delete m_ul; m_ul = NULL;
@@ -308,7 +272,6 @@ void node_f::insert(const node_f & n, const node_f * parent)
 	}
 }
 
-
 Tpoint<float> get_closest_p(const Trect<float> & rect, const Tpoint<float> & p)
 {
 	//  1 | 2 | 3
@@ -399,36 +362,6 @@ void node_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f
 		if (found.size() >= n)
 			found.pop_back();
 	}
-
-
-	/*
-	if (found.size() < n)
-	{
-		if (found.empty())
-			found.push_back(m_p);
-		else
-		{
-			auto it = lower_bound(found.begin(), found.end(), m_p,
-				[p](const node_f & a, const node_f & b)
-			{ return sq_distance(a.m_p, p) <= sq_distance(b.m_p, p); });
-			found.insert(it, m_p);
-		}
-	}
-	else
-	{
-		double curr_dist = sq_distance(p, m_p);
-		for (auto it = found.begin(); it != found.end(); ++it)
-		{
-			if (curr_dist <= sq_distance(p, it->m_p))
-			{
-				found.insert(it, m_p);
-				if (found.size() >= n)
-					found.pop_back();
-				break;
-			}
-		}
-	}
-	*/
 
 	if (m_ul != NULL)
 		if (sq_distance(get_closest_p(m_ul_r, p), p) <= sq_distance(p, found.back().m_p))

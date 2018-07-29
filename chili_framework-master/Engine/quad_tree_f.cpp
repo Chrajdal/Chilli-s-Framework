@@ -61,7 +61,7 @@ void quad_tree_f::insert(const Tpoint<float> & p)
 
 void quad_tree_f::insert(const node_f & n)
 {
-	if (n.m_p.m_x < GMINX || n.m_p.m_x > GMAXX || n.m_p.m_y < GMINY || n.m_p.m_y > GMAXY)
+	if (n.m_p.m_x < GMINX || n.m_p.m_x >= GMAXX || n.m_p.m_y < GMINY || n.m_p.m_y >= GMAXY)
 		return;
 
 	if (m_root == NULL)

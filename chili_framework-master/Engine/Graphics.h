@@ -4,7 +4,6 @@
 #include <wrl.h>
 #include "ChiliException.h"
 #include "Colors.h"
-#include "utils.h"
 
 class Graphics;
 
