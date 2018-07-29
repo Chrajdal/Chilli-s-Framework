@@ -3,8 +3,16 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+
+#include "Vec2.h"
+#include "Vec3.h"
+#include "Mat2.h"
+#include "Mat3.h"
+
 using namespace std;
 using namespace std::chrono;
+
+
 
 //-----------------------------------------------------------------------------
 template<typename T>

@@ -47,20 +47,20 @@ inline T interpolate(const T& src, const T& dst, float alpha)
 }
 
 template <typename T>
-class _Vec2
+class Cvector2
 {
 public:
-	_Vec2(const T & x = {}, const T & y = {})
+	Cvector2(const T & x = {}, const T & y = {})
 		:
 		x(x),
 		y(y)
 	{}
-	_Vec2(const _Vec2& vect)
+	Cvector2(const Cvector2& vect)
 		:
-		_Vec2(vect.x, vect.y)
+		Cvector2(vect.x, vect.y)
 	{}
 	template <typename T2>
-	explicit operator _Vec2<T2>() const
+	explicit operator Cvector2<T2>() const
 	{
 		return{ (T2)x,(T2)y };
 	}
@@ -72,78 +72,78 @@ public:
 	{
 		return sqrt(LenSq());
 	}
-	_Vec2&	Normalize()
+	Cvector2&	Normalize()
 	{
 		const T length = Len();
 		x /= length;
 		y /= length;
 		return *this;
 	}
-	_Vec2	GetNormalized() const
+	Cvector2	GetNormalized() const
 	{
-		_Vec2 norm = *this;
+		Cvector2 norm = *this;
 		norm.Normalize();
 		return norm;
 	}
-	_Vec2	operator-() const
+	Cvector2	operator-() const
 	{
-		return _Vec2(-x, -y);
+		return Cvector2(-x, -y);
 	}
-	_Vec2&	operator=(const _Vec2 &rhs)
+	Cvector2&	operator=(const Cvector2 &rhs)
 	{
 		x = rhs.x;
 		y = rhs.y;
 		return *this;
 	}
-	_Vec2&	operator+=(const _Vec2 &rhs)
+	Cvector2&	operator+=(const Cvector2 &rhs)
 	{
 		x += rhs.x;
 		y += rhs.y;
 		return *this;
 	}
-	_Vec2&	operator-=(const _Vec2 &rhs)
+	Cvector2&	operator-=(const Cvector2 &rhs)
 	{
 		x -= rhs.x;
 		y -= rhs.y;
 		return *this;
 	}
-	T		operator*(const _Vec2 &rhs) const
+	T		operator*(const Cvector2 &rhs) const
 	{
 		return x * rhs.x + y * rhs.y;
 	}
-	_Vec2	operator+(const _Vec2 &rhs) const
+	Cvector2	operator+(const Cvector2 &rhs) const
 	{
-		return _Vec2(*this) += rhs;
+		return Cvector2(*this) += rhs;
 	}
-	_Vec2	operator-(const _Vec2 &rhs) const
+	Cvector2	operator-(const Cvector2 &rhs) const
 	{
-		return _Vec2(*this) -= rhs;
+		return Cvector2(*this) -= rhs;
 	}
-	_Vec2&	operator*=(const T &rhs)
+	Cvector2&	operator*=(const T &rhs)
 	{
 		x *= rhs;
 		y *= rhs;
 		return *this;
 	}
-	_Vec2	operator*(const T &rhs) const
+	Cvector2	operator*(const T &rhs) const
 	{
-		return _Vec2(*this) *= rhs;
+		return Cvector2(*this) *= rhs;
 	}
-	_Vec2&	operator/=(const T &rhs)
+	Cvector2&	operator/=(const T &rhs)
 	{
 		x /= rhs;
 		y /= rhs;
 		return *this;
 	}
-	_Vec2	operator/(const T &rhs) const
+	Cvector2	operator/(const T &rhs) const
 	{
-		return _Vec2(*this) /= rhs;
+		return Cvector2(*this) /= rhs;
 	}
-	bool	operator==(const _Vec2 &rhs) const
+	bool	operator==(const Cvector2 &rhs) const
 	{
 		return x == rhs.x && y == rhs.y;
 	}
-	bool	operator!=(const _Vec2 &rhs) const
+	bool	operator!=(const Cvector2 &rhs) const
 	{
 		return !(*this == rhs);
 	}
@@ -152,6 +152,6 @@ public:
 	T y;
 };
 
-typedef _Vec2<float> Vec2;
-typedef _Vec2<double> Ved2;
-typedef _Vec2<int> Vei2;
+typedef Cvector2<float> Vec2;
+typedef Cvector2<double> Ved2;
+typedef Cvector2<int> Vei2;
