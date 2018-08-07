@@ -1,95 +1,61 @@
 #include "quad_tree.h"
 
-//-----------------------------------------------------------------------------
-quad_tree::quad_tree(void)
-	: m_root(NULL)
+QuadTree::QuadTree(void)
+	: m_root(NULL), m_size(0)
 {}
 
-quad_tree::~quad_tree(void)
+QuadTree::~QuadTree(void)
 {
 	delete m_root;
 }
 
-quad_tree::quad_tree(const quad_tree & src)
+void QuadTree::insert(const Node & n)
 {
-	if (src.m_root == NULL)
-		m_root = NULL;
-	else
-		m_root = new node(*src.m_root);
-}
-
-quad_tree & quad_tree::operator = (const quad_tree & src)
-{
-	if (this == &src)
-		return *this;
-	clear();
-	if (src.m_root != NULL)
-		m_root = new node(*src.m_root);
-	return *this;
-}
-
-void quad_tree::insert(int x, int y)
-{
-	insert(Tpoint<int>(x, y));
-}
-
-void quad_tree::insert(const Tpoint<int> & p)
-{
-	if (p.m_x < GMINX || p.m_x >= GMAXX || p.m_y < GMINY || p.m_y >= GMAXY)
-		return;
-
 	if (m_root == NULL)
 	{
-		m_root = new node(p);
-		int MIN_X = (int)GMINX;
-		int MID_X = (int)p.m_x;
-		int MAX_X = (int)GMAXX;
-		int MIN_Y = (int)GMINY;
-		int MID_Y = (int)p.m_y;
-		int MAX_Y = (int)GMAXY;
-
-		m_root->m_ul_r = Trect<int>(Tpoint<int>(MIN_X, MIN_Y), Tpoint<int>(MID_X, MID_Y));
-		m_root->m_ur_r = Trect<int>(Tpoint<int>(MID_X, MIN_Y), Tpoint<int>(MAX_X, MID_Y));
-		m_root->m_dl_r = Trect<int>(Tpoint<int>(MIN_X, MID_Y), Tpoint<int>(MID_X, MAX_Y));
-		m_root->m_dr_r = Trect<int>(Tpoint<int>(MID_X, MID_Y), Tpoint<int>(MAX_X, MAX_Y));
+		Trect<double> boundary{ { -10000, -10000 },{ 10000, 10000 } };
+		if (boundary.contains(n.m_x, n.m_y))
+		{
+			m_root = new Node(n.m_x, n.m_y, n.m_tile_data, boundary);
+			m_size = 1;
+		}
 	}
 	else
 	{
-		m_root->insert(p, m_root);
+		if (m_root->insert(n))
+			m_size++;
 	}
 }
 
-void quad_tree::clear(void)
+vector<const Node *> QuadTree::range(Trect<double> & range) const
+{
+	vector<const Node *> res;
+	if (m_root != NULL)
+		m_root->range(res, range);
+	return res;
+}
+
+void QuadTree::clear(void)
 {
 	delete m_root;
 	m_root = NULL;
+	m_size = 0;
 }
 
-Tpoint<int> quad_tree::find_closest_point(const Tpoint<int> & p) const
+void QuadTree::Draw(Graphics & gfx, int camx, int camy) const
+{
+	if (m_root != NULL)
+		m_root->Draw(gfx, camx, camy);
+}
+
+unsigned QuadTree::size(void) const
+{
+	return m_size;
+}
+
+Trect<double> QuadTree::boundary(void) const
 {
 	if (m_root == NULL)
-		return Tpoint<int>();
-	else
-	{
-		unsigned long long best_dist = sq_distance(p, m_root->m_p);
-		Tpoint<int> closest(m_root->m_p);
-		return m_root->find_closest_point(p, closest, best_dist);
-	}
+		return Trect<double>();
+	return m_root->m_boundary;
 }
-
-vector<Tpoint<int>> quad_tree::find_n_closest_points(const Tpoint<int> & p, int n)
-{
-	if (m_root == NULL)
-		return vector<Tpoint<int>>();
-	else
-	{
-		vector<Tpoint<int>> res;
-		return m_root->find_n_closest_points(p, n, res);
-	}
-}
-
-void quad_tree::draw(Graphics & gfx, bool draw_rect) const
-{
-	if (m_root != NULL) m_root->draw(gfx, draw_rect);
-}
-//-----------------------------------------------------------------------------

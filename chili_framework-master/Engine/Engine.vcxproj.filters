@@ -75,12 +75,6 @@
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="quad_tree_f.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="node_f.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="node.h">
       <Filter>Header Files</Filter>
     </ClInclude>

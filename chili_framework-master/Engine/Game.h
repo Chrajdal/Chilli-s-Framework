@@ -28,6 +28,8 @@
 #include "utils.h"
 #include "Random.h"
 
+#include "quad_tree.h"
+
 class Game
 {
 public:

@@ -156,9 +156,7 @@
     <ClInclude Include="Mat3.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="node.h" />
-    <ClInclude Include="node_f.h" />
     <ClInclude Include="quad_tree.h" />
-    <ClInclude Include="quad_tree_f.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Sound.h" />

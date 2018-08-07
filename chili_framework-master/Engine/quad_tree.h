@@ -7,23 +7,20 @@
 #include "node.h"
 #include <vector>
 
-using namespace std;
-
-//-----------------------------------------------------------------------------
-class quad_tree
+class QuadTree
 {
 public:
-	quad_tree(void);
-	~quad_tree(void);
-	quad_tree::quad_tree(const quad_tree & src);
-	quad_tree & quad_tree::operator = (const quad_tree & src);
-	void insert(int x, int y);
-	void insert(const Tpoint<int> & p);
+	QuadTree(void);
+	~QuadTree(void);
+
+	void insert(const Node & n);
+	vector<const Node *> range(Trect<double> & range) const;
 	void clear(void);
-	Tpoint<int> find_closest_point(const Tpoint<int> & p) const;
-	vector<Tpoint<int>> find_n_closest_points(const Tpoint<int> & p, int n);
-	void draw(Graphics & gfx, bool draw_rect = false) const;
-public:
-	node * m_root;
+	void Draw(Graphics & gfx, int camx, int camy) const;
+	unsigned size(void) const;
+	Trect<double> boundary(void) const;
+
+private:
+	Node * m_root;
+	unsigned m_size;
 };
-//-----------------------------------------------------------------------------
