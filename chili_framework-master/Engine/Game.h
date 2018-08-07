@@ -1,5 +1,5 @@
 #pragma once
-#pragma optimize( "", off )
+//#pragma optimize( "", off )
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include <array>
 #include <list>
 #include <algorithm>
 #include <functional>
@@ -21,33 +22,26 @@
 #include <thread>
 #include <mutex>
 #include <fstream>
-#include <iostream>
 #include "MainWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "Random.h"
 #include "utils.h"
-
-#include "node.h"
-#include "node_f.h"
-
-#include "quad_tree.h"
-#include "quad_tree_f.h"
+#include "Random.h"
 
 class Game
 {
 public:
-	Game( class MainWindow& wnd );
-	Game( const Game& ) = delete;
-	Game& operator=( const Game& ) = delete;
+	Game(class MainWindow& wnd);
+	Game(const Game&) = delete;
+	Game& operator=(const Game&) = delete;
 	void Go();
 private:
+	void HandleInput();
 	void ComposeFrame();
 	void UpdateModel();
-	void HandleInput();
-	
+
 private:
-	MainWindow& wnd;
+	MainWindow & wnd;
 	Graphics gfx;
-	CTimer m_timer;
+	CTimer timer;
 };

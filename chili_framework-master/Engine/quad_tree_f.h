@@ -6,6 +6,7 @@
 #include "Vec2.h"
 #include "node_f.h"
 #include <vector>
+#include <iostream>
 
 //-----------------------------------------------------------------------------
 class quad_tree_f
@@ -14,6 +15,7 @@ public:
 	quad_tree_f(void);
 	quad_tree_f(const quad_tree_f & src);
 	quad_tree_f & operator = (const quad_tree_f & src);
+	quad_tree_f & operator = (quad_tree_f && src);
 	~quad_tree_f(void);
 
 	void insert(float x, float y);

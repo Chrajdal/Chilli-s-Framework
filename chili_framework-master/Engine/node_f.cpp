@@ -350,6 +350,7 @@ Tpoint<float> node_f::find_closest_point(const Tpoint<float> & p, Tpoint<float> 
 
 void node_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f> & found) const
 {
+	/*
 	if (found.empty())
 		found.push_back(m_p);
 	else
@@ -361,6 +362,34 @@ void node_f::find_n_closest_points(const Tpoint<float> & p, int n, vector<node_f
 		
 		if (found.size() >= n)
 			found.pop_back();
+	}
+	*/
+
+	if (found.size() < n)
+	{
+		if (found.empty())
+			found.push_back(m_p);
+		else
+		{
+			auto it = lower_bound(found.begin(), found.end(), m_p,
+				[p](const node_f & a, const node_f & b)
+			{ return sq_distance(a.m_p, p) <= sq_distance(b.m_p, p); });
+			found.insert(it, m_p);
+		}
+	}
+	else
+	{
+		double curr_dist = sq_distance(p, m_p);
+		for (auto it = found.begin(); it != found.end(); ++it)
+		{
+			if (curr_dist <= sq_distance(p, it->m_p))
+			{
+				found.insert(it, m_p);
+				if (found.size() >= n)
+					found.pop_back();
+				break;
+			}
+		}
 	}
 
 	if (m_ul != NULL)
@@ -383,7 +412,7 @@ void node_f::draw(Graphics & gfx, bool draw_rect) const
 	if (m_p.m_x >= 10 && m_p.m_y >= 10 &&
 		m_p.m_x < Graphics::ScreenWidth - 10 &&
 		m_p.m_y < Graphics::ScreenHeight - 10)
-		gfx.draw_circle((int)m_p.m_x, (int)m_p.m_y, 5, Colors::Gray);
+		gfx.draw_circle((int)m_p.m_x, (int)m_p.m_y, 3, Colors::Gray);
 	if (draw_rect == true)
 	{
 		gfx.draw_line((int)m_p.m_x, (int)m_p.m_y, (int)m_p.m_x               , (int)m_ul_r.m_upleft.m_y, Colors::Green);

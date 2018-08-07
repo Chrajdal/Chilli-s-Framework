@@ -11,7 +11,6 @@ public:
 	{
 		rng = std::mt19937(seed);
 	}
-	~Random() {}
 
 	int32_t Random::next(int32_t minval = std::numeric_limits<int32_t>::min(), int32_t maxval = std::numeric_limits<int32_t>::max())
 	{

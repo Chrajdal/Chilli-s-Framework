@@ -23,6 +23,26 @@ quad_tree_f & quad_tree_f::operator = (const quad_tree_f & src)
 	return *this;
 }
 
+quad_tree_f & quad_tree_f::operator = (quad_tree_f && src)
+{
+	if (this == &src)
+		return *this;
+	clear();
+	if (src.m_root == NULL)
+	{
+		m_root = NULL;
+		return *this;
+	}
+	else
+	{
+		m_root = src.m_root;
+		src.m_root = NULL;
+		return *this;
+	}
+	return *this;
+}
+
+
 quad_tree_f::~quad_tree_f(void)
 {
 	delete m_root;
