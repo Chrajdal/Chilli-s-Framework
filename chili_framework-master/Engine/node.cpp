@@ -1,6 +1,6 @@
 #include "node.h"
 
-Node::Node(int x, int y, Bitmap * s, const Trect<double> & boundary = {})
+Node::Node(int x, int y, const Surface * s, const Trect<double> & boundary)
 	: m_x(x), m_y(y),
 	m_nw(NULL), m_ne(NULL), m_sw(NULL), m_se(NULL),
 	m_tile_data(s), m_boundary(boundary)
@@ -101,15 +101,15 @@ bool Node::insert(const Node & n)
 
 void Node::Draw(Graphics & gfx, int camx, int camy) const
 {
-	if (m_nw != NULL) m_nw->Draw(gfx, camx, camy);
-	if (m_ne != NULL) m_ne->Draw(gfx, camx, camy);
-	if (m_sw != NULL) m_sw->Draw(gfx, camx, camy);
-	if (m_se != NULL) m_se->Draw(gfx, camx, camy);
-
-	if (m_x + camx < 0 || m_x + camx >= Graphics::ScreenWidth ||
-		m_y + camy < 0 || m_y + camy >= Graphics::ScreenHeight)
-		return;
-	gfx.PutPixel(m_x + camx, m_y + camy, m_tile_data->GetPixel(0, 0));
+	//if (m_nw != NULL) m_nw->Draw(gfx, camx, camy);
+	//if (m_ne != NULL) m_ne->Draw(gfx, camx, camy);
+	//if (m_sw != NULL) m_sw->Draw(gfx, camx, camy);
+	//if (m_se != NULL) m_se->Draw(gfx, camx, camy);
+	//
+	//if (m_x + camx < 0 || m_x + camx >= Graphics::ScreenWidth ||
+	//	m_y + camy < 0 || m_y + camy >= Graphics::ScreenHeight)
+	//	return;
+	//gfx.PutPixel(m_x + camx, m_y + camy, m_tile_data->GetPixel(0, 0));
 }
 
 void Node::range(vector<const Node *> & PointsInRange, Trect<double> & range) const

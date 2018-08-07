@@ -5,11 +5,12 @@
 #include "Colors.h"
 #include "Vec2.h"
 #include <vector>
+#include "Surface.h"
 
 class Node
 {
 public:
-	Node(int x, int y, Bitmap * s, const Trect<double> & boundary = {});
+	Node(int x, int y, const Surface * s, const Trect<double> & boundary = {});
 	Node(const Node & src);
 	Node & operator = (const Node & src);
 	~Node(void);
@@ -22,5 +23,5 @@ public:
 	int m_y;
 	Node * m_nw, *m_ne, *m_sw, *m_se;
 	mutable Trect<double> m_boundary;
-	Bitmap * m_tile_data;
+	const Surface * m_tile_data;
 };

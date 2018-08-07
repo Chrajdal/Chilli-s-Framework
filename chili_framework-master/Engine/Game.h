@@ -27,6 +27,7 @@
 #include "Mouse.h"
 #include "utils.h"
 #include "Random.h"
+#include "Camera.h"
 
 #include "quad_tree.h"
 

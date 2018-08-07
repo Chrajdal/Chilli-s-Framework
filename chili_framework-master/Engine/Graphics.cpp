@@ -499,3 +499,18 @@ void Graphics::draw_bitmap(int x, int y, const Bitmap & bmp)
 			pSysBuffer + ((i + y) * Graphics::ScreenHeight + x));
 	}
 }
+
+void Graphics::draw_surface(int x, int y, const Surface & srf)
+{
+	for (int i = 0; i < srf.height(); ++i)
+		std::copy_n(srf.get_data() + i * srf.width(), srf.width(), pSysBuffer + (y + i) * ScreenWidth + x);
+
+	//for (int i = 0; i < srf.width(); ++i)
+	//{
+	//	for (int j = 0; j < srf.height(); ++j)
+	//	{
+	//		Color c = *(srf.get_data() + j * srf.width() + i);
+	//		PutPixel(x + i, y + j, c);
+	//	}
+	//}
+}

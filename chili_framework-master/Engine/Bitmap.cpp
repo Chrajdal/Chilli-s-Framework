@@ -87,12 +87,8 @@ Bitmap& Bitmap::operator=(const Bitmap & rhs)
 	delete[] pPixels;
 	pPixels = new Color[width*height];
 
-	//const int nPixels = width * height;
-	//for (int i = 0; i < nPixels; i++)
-	//{
-	//	pPixels[i] = rhs.pPixels[i];
-	//}
-	memcpy(pPixels, rhs.pPixels, sizeof(Color) * width * height);
+	//memcpy(pPixels, rhs.pPixels, sizeof(Color) * width * height);
+	std::copy_n(rhs.pPixels, width * height, pPixels);
 	return *this;
 }
 

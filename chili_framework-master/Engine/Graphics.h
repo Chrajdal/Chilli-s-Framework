@@ -5,6 +5,7 @@
 #include "ChiliException.h"
 #include "Colors.h"
 #include "Bitmap.h"
+#include "Surface.h"
 
 #define GMINY 0
 #define GMAXY (Graphics::ScreenHeight - 1)
@@ -72,4 +73,5 @@ public:
 	void draw_rect(int x, int y, int width, int height, const Color & c);
 
 	void draw_bitmap(int x, int y, const Bitmap & bmp);
+	void draw_surface(int x, int y, const Surface & srf);
 };
