@@ -13,7 +13,7 @@ void QuadTree::insert(const Node & n)
 {
 	if (m_root == NULL)
 	{
-		Trect<double> boundary{ { -10000, -10000 },{ 10000, 10000 } };
+		Trect<double> boundary{ { -100000, -100000 },{ 100000, 100000 } };
 		if (boundary.contains(n.m_x, n.m_y))
 		{
 			m_root = new Node(n.m_x, n.m_y, n.m_tile_data, boundary);

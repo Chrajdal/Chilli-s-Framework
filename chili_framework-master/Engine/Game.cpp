@@ -1,8 +1,5 @@
 #include "Game.h"
 
-constexpr double dmax = std::numeric_limits<double>::max();
-constexpr double dmin = std::numeric_limits<double>::lowest();
-
 inline ostream & nl(ostream & os) { return os << "\n"; }
 
 QuadTree tree;
@@ -10,53 +7,31 @@ Camera cam;
 vector<Surface> tile_map;
 vector<Color> rainbow;
 Random rnd;
-double dx = 0.1;
-double dy = 0.1;
-
+Bitmap tile_sheet("32x32_map_tile v3.1.bmp");
+double dx = 0.05;
+double dy = 0.05;
 int framecount = 0;
 double time_concatenated = 0.0;
-
-Bitmap tile_sheet("32x32_map_tile v3.1.bmp");
-Surface a(&tile_sheet, 0, 32, 32, 32);
+constexpr double dmax = std::numeric_limits<double>::max();
+constexpr double dmin = std::numeric_limits<double>::lowest();
+constexpr double tile_size = 32;
 
 Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
 {
-	srand(unsigned(time(0)));
+	//srand(unsigned(time(0)));
 
-	tree.insert(Node(0, 0, &a));
-
-	for (int i = 0; i < 23; ++i)
+	for (int i = 0; i < tile_sheet.width / tile_size; ++i)
 	{
-		for (int j = 1; j < 29; ++j)
+		for (int j = 1; j < tile_sheet.height / tile_size; ++j)
 		{
-			//if (i < 19 && j < 29 - 13 &&
-			//	(j != 15))
 			if ((tile_sheet.data() + i * 32 + j * 32 * tile_sheet.width)->dword != (tile_sheet.data()->dword))
 				tile_map.push_back(Surface(&tile_sheet, i * 32, j * 32, 32, 32));
 		}
 	}
-
-	//for (int i = 0; i < 100000; ++i)
-	//{
-	//	int x = rnd.next_double(-1000, 1000);
-	//	int y = rnd.next_double(-1000, 1000);
-	//	unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * tile_map.size());
-	//	tree.insert(Node(x, y, &tile_map[idx]));
-	//}
-
-	//for (int i = 0; i < 32; ++i)
-	//{
-	//	for (int j = 0; j < 32; j++)
-	//	{
-	//		int x = i;
-	//		int y = j;
-	//		unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * tile_map.size());
-	//		tree.insert(Node(x, y, &tile_map[idx]));
-	//	}
-	//}
+	std::random_shuffle(std::begin(tile_map), std::end(tile_map));
 }
 
 void Game::Go()
@@ -73,15 +48,16 @@ void Game::Go()
 
 	gfx.EndFrame();
 
-	double elapsed = t.elapsed() + 1e-3; // to avoid infinities
+	double elapsed = t.elapsed_ns() + 1e-9; // to avoid infinities
 	time_concatenated += elapsed;
 	framecount++;
-	cout << 1000.0 / elapsed << " AVG= " << 1000 / (time_concatenated / framecount) << " ... " << tree.size() << endl;
+	//cout << fixed << setw(3) << setprecision(3)
+	//	 << 1e9 / elapsed << " AVG= " << 1e9 / (time_concatenated / framecount) << " ... " << tree.size() << endl;
 }
 
 void Game::HandleInput()
 {
-	double speed = 1.5e1;
+	double speed = 1e1;
 	if (wnd.kbd.KeyIsPressed(VK_UP))
 	{
 		cam.m_y -= speed;
@@ -100,32 +76,13 @@ void Game::HandleInput()
 		cam.m_x += speed;
 	}
 
-	if (wnd.mouse.LeftIsPressed())
-	{
-		int x = wnd.mouse.GetPosX() - cam.m_x;
-		int y = wnd.mouse.GetPosY() - cam.m_y;
-		unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * tile_map.size());
-		//tree.insert(Node(x, y, &tile_map[idx]));
-	}
-
-	if (wnd.mouse.LeftIsPressed() && wnd.kbd.KeyIsPressed(VK_CONTROL))
-	{
-		for (int i = 0; i < 1000; ++i)
-		{
-			int x = wnd.mouse.GetPosX() + rnd.next(-50, 50) - cam.m_x;
-			int y = wnd.mouse.GetPosY() + rnd.next(-50, 50) - cam.m_y;
-			unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * tile_map.size());
-			//tree.insert(Node(x, y, &tile_map[idx]));
-		}
-	}
-
 	if (wnd.kbd.KeyIsPressed(VK_SPACE))
 	{
 		for (int i = 0; i < 100000; ++i)
 		{
-			int x = rnd.next_double(-1000, 1000);
-			int y = rnd.next_double(-1000, 1000);
-			unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * tile_map.size());
+			int x = rnd.next_double(-10000, 10000);
+			int y = rnd.next_double(-10000, 10000);
+			unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * (tile_map.size()));
 			tree.insert(Node(x, y, &tile_map[idx]));
 		}
 	}
@@ -133,23 +90,23 @@ void Game::HandleInput()
 	if (wnd.kbd.KeyIsPressed(VK_DELETE))
 	{
 		tree.clear();
-		tile_map.clear();
-		for (int i = 0; i < rainbow.size(); ++i)
-		{
-			//tile_map.push_back(Surface(rainbow[i]));
-		}
+		//tile_map.clear();
+		//for (int i = 0; i < rainbow.size(); ++i)
+		//{
+		//	//tile_map.push_back(Surface(rainbow[i]));
+		//}
 	}
 }
 
 void Game::UpdateModel()
 {
-	for (int i = (300 + 0 + cam.m_x) / 32; i < (1024 + cam.m_x - 300) / 32; ++i)
+	for (int i = (0 + cam.m_x) / 32; i < (1024 + cam.m_x) / 32; ++i)
 	{
-		for (int j = ( 300 + 0 + cam.m_y) / 32; j < (1024 + cam.m_y - 300) / 32; ++j)
+		for (int j = (0 + cam.m_y) / 32; j < (1024 + cam.m_y) / 32; ++j)
 		{
 			int x = i;
 			int y = j;
-			unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * tile_map.size());
+			unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * (tile_map.size()));
 			tree.insert(Node(x, y, &tile_map[idx]));
 		}
 	}
@@ -157,10 +114,6 @@ void Game::UpdateModel()
 
 void Game::ComposeFrame()
 {
-	//tree.Draw(gfx, camx, camy);
-
-	double tile_size = 32;
-
 	// offset screen by cam
 	Trect<double> screen({ 0 + cam.m_x,0 + cam.m_y }, { 1024 + cam.m_x, 1024 + cam.m_y });
 
@@ -170,10 +123,7 @@ void Game::ComposeFrame()
 	screen.m_downright.m_x /= tile_size;
 	screen.m_downright.m_y /= tile_size;
 
-	CTimer mtimer;
 	vector<const Node *> vec = tree.range(screen);
-	double elapsed = mtimer.elapsed();
-	// cout << vec.size() << " - took me " << elapsed << " ms  ";
 	for (const auto & i : vec)
 	{
 		int x = i->m_x * tile_size - cam.m_x;
@@ -181,9 +131,12 @@ void Game::ComposeFrame()
 
 		if (x >= 0 && x + tile_size < Graphics::ScreenWidth  &&
 			y >= 0 && y + tile_size < Graphics::ScreenHeight)
-			//gfx.draw_rect(x, y, tile_size, tile_size, i->m_tile_data->get_data()[0]);
-			//gfx.draw_bitmap(x, y, *(i->m_tile_data));
 			gfx.draw_surface(x, y, *i->m_tile_data);
 	}
 
+	// easy way out:
+	gfx.draw_rect(0, 0, 32, Graphics::ScreenHeight, Colors::White);
+	gfx.draw_rect(Graphics::ScreenWidth - 32, 0, 32, Graphics::ScreenHeight, Colors::White);
+	gfx.draw_rect(0, 0, Graphics::ScreenWidth, 32, Colors::White);
+	gfx.draw_rect(0, Graphics::ScreenHeight - 32, Graphics::ScreenWidth, 32, Colors::White);
 }
