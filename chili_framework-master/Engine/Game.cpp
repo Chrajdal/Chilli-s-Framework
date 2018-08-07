@@ -32,7 +32,9 @@ Game::Game(MainWindow & wnd)
 	{
 		for (int j = 1; j < 29; ++j)
 		{
-			if (i < 19 && j < 29 - 13)
+			//if (i < 19 && j < 29 - 13 &&
+			//	(j != 15))
+			if ((tile_sheet.data() + i * 32 + j * 32 * tile_sheet.width)->dword != (tile_sheet.data()->dword))
 				tile_map.push_back(Surface(&tile_sheet, i * 32, j * 32, 32, 32));
 		}
 	}
