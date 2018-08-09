@@ -305,7 +305,8 @@ void Graphics::BeginFrame()
 {
 	// clear the sysbuffer
 	//memset(pSysBuffer, Colors::Gold.dword, sizeof(Color) * Graphics::ScreenHeight * Graphics::ScreenWidth);
-	std::fill(pSysBuffer, pSysBuffer + Graphics::ScreenHeight * Graphics::ScreenWidth, Colors::Black);
+	constexpr Color c = Colors::MakeRGB(182, 228, 249);
+	std::fill(pSysBuffer, pSysBuffer + Graphics::ScreenHeight * Graphics::ScreenWidth, c);
 }
 
 void Graphics::PutPixel(int x, int y, Color c)

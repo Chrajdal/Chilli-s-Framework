@@ -16,7 +16,7 @@ void QuadTree::insert(const Node & n)
 		Trect<double> boundary{ { -100000, -100000 },{ 100000, 100000 } };
 		if (boundary.contains(n.m_x, n.m_y))
 		{
-			m_root = new Node(n.m_x, n.m_y, n.m_tile_data, boundary);
+			m_root = new Node(n.m_x, n.m_y, n.m_tile, boundary);
 			m_size = 1;
 		}
 	}
@@ -35,17 +35,19 @@ vector<const Node *> QuadTree::range(Trect<double> & range) const
 	return res;
 }
 
+const Node * QuadTree::at(int x, int y) const
+{
+	if (m_root == NULL)
+		return NULL;
+	else
+		return m_root->at(x, y);
+}
+
 void QuadTree::clear(void)
 {
 	delete m_root;
 	m_root = NULL;
 	m_size = 0;
-}
-
-void QuadTree::Draw(Graphics & gfx, int camx, int camy) const
-{
-	if (m_root != NULL)
-		m_root->Draw(gfx, camx, camy);
 }
 
 unsigned QuadTree::size(void) const

@@ -15,8 +15,9 @@ public:
 
 	void insert(const Node & n);
 	vector<const Node *> range(Trect<double> & range) const;
+	const Node * at(int x, int y) const;
+
 	void clear(void);
-	void Draw(Graphics & gfx, int camx, int camy) const;
 	unsigned size(void) const;
 	Trect<double> boundary(void) const;
 

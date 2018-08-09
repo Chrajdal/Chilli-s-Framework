@@ -4,34 +4,33 @@ inline ostream & nl(ostream & os) { return os << "\n"; }
 
 QuadTree tree;
 Camera cam;
-vector<Surface> tile_map;
+Bitmap tile_sheet_dirt(".\\Assets\\grass.bmp");
+//Bitmap tile_sheet_stone(".\\Assets\\stone.bmp");
+vector<Surface> tile_map_dirt;
+vector<Surface> tile_map_stone;
 vector<Color> rainbow;
 Random rnd;
-Bitmap tile_sheet("32x32_map_tile v3.1.bmp");
-double dx = 0.05;
-double dy = 0.05;
+double dx = 1e-1;
+double dy = 1e-1;
 int framecount = 0;
 double time_concatenated = 0.0;
 constexpr double dmax = std::numeric_limits<double>::max();
 constexpr double dmin = std::numeric_limits<double>::lowest();
-constexpr double tile_size = 32;
+constexpr double tile_size = 16;
 
 Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
 {
-	//srand(unsigned(time(0)));
-
-	for (int i = 0; i < tile_sheet.width / tile_size; ++i)
-	{
-		for (int j = 1; j < tile_sheet.height / tile_size; ++j)
-		{
-			if ((tile_sheet.data() + i * 32 + j * 32 * tile_sheet.width)->dword != (tile_sheet.data()->dword))
-				tile_map.push_back(Surface(&tile_sheet, i * 32, j * 32, 32, 32));
-		}
-	}
-	std::random_shuffle(std::begin(tile_map), std::end(tile_map));
+	// Load assets:
+	for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
+		for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
+			tile_map_dirt.push_back(Surface(&tile_sheet_dirt, i * tile_size, j * tile_size, tile_size, tile_size));
+	//for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
+	//	for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
+	//		tile_map_stone.push_back(Surface(&tile_sheet_stone, i * tile_size, j * tile_size, tile_size, tile_size));
+	
 }
 
 void Game::Go()
@@ -76,38 +75,54 @@ void Game::HandleInput()
 		cam.m_x += speed;
 	}
 
-	if (wnd.kbd.KeyIsPressed(VK_SPACE))
-	{
-		for (int i = 0; i < 100000; ++i)
-		{
-			int x = rnd.next_double(-10000, 10000);
-			int y = rnd.next_double(-10000, 10000);
-			unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * (tile_map.size()));
-			tree.insert(Node(x, y, &tile_map[idx]));
-		}
-	}
+	//if (wnd.kbd.KeyIsPressed(VK_SPACE))
+	//{
+	//	for (int i = 0; i < 100000; ++i)
+	//	{
+	//		int x = rnd.next_double(-10000, 10000);
+	//		int y = rnd.next_double(-10000, 10000);
+	//		unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * (tile_map_dirt.size()));
+	//		tree.insert(Node(x, y, &tile_map_dirt[idx]));
+	//	}
+	//}
 
 	if (wnd.kbd.KeyIsPressed(VK_DELETE))
 	{
 		tree.clear();
-		//tile_map.clear();
+		//tile_map_dirt.clear();
 		//for (int i = 0; i < rainbow.size(); ++i)
 		//{
-		//	//tile_map.push_back(Surface(rainbow[i]));
+		//	//tile_map_dirt.push_back(Surface(rainbow[i]));
 		//}
 	}
 }
 
 void Game::UpdateModel()
-{
-	for (int i = (0 + cam.m_x) / 32; i < (1024 + cam.m_x) / 32; ++i)
+{	
+	int tmp = -200;
+	for (int i = (tmp + 0 + cam.m_x) / tile_size; i < (1024 + cam.m_x - tmp) / tile_size; ++i)
 	{
-		for (int j = (0 + cam.m_y) / 32; j < (1024 + cam.m_y) / 32; ++j)
+		for (int j = (tmp + 0 + cam.m_y) / tile_size; j < (1024 + cam.m_y - tmp) / tile_size; ++j)
 		{
+			double height_treshold = perlin::noise(/*i * dx * 0.1, */ i * dx * 0.15) * 100;
+
+			//cout << height_treshold << endl;
+
 			int x = i;
 			int y = j;
-			unsigned idx = std::abs(perlin::noise(x * dx, y * dy) * (tile_map.size()));
-			tree.insert(Node(x, y, &tile_map[idx]));
+			//unsigned idx = 0;
+			if (height_treshold > j)
+			{
+				tree.insert(Node(x, y, tile_type::air));
+			}
+			else if (height_treshold < j)
+			{
+				tree.insert(Node(x, y, tile_type::dirt));
+			}
+			else if (height_treshold * 5 < j)
+			{
+				tree.insert(Node(x, y, tile_type::stone));
+			}
 		}
 	}
 }
@@ -131,12 +146,50 @@ void Game::ComposeFrame()
 
 		if (x >= 0 && x + tile_size < Graphics::ScreenWidth  &&
 			y >= 0 && y + tile_size < Graphics::ScreenHeight)
-			gfx.draw_surface(x, y, *i->m_tile_data);
+		{
+			if (i->m_tile == tile_type::dirt)
+			{
+				//gfx.draw_surface(x, y, tile_map_dirt[5]);
+
+				const Node * n = tree.at(i->m_x, i->m_y + 1);
+				const Node * s = tree.at(i->m_x, i->m_y - 1);
+				const Node * w = tree.at(i->m_x - 1, i->m_y);
+				const Node * e = tree.at(i->m_x + 1, i->m_y);
+				cout << string(50, '*') << endl;
+				if (n == NULL)
+					cout << "n is NULL" << endl;
+				if (s == NULL)
+					cout << "s is NULL" << endl;
+				if (w == NULL)
+					cout << "w is NULL" << endl;
+				if (e == NULL)
+					cout << "e is NULL" << endl;
+				cout << string(50, '*') << endl;
+				if (n != NULL && s != NULL && w != NULL && e != NULL)
+				{
+					if (n->m_tile == tile_type::air && s->m_tile == tile_type::air &&
+						w->m_tile == tile_type::air && e->m_tile == tile_type::air)
+						gfx.draw_surface(x, y, tile_map_dirt[15]);
+					else if (
+						n->m_tile == tile_type::dirt && s->m_tile == tile_type::dirt &&
+						w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
+						gfx.draw_surface(x, y, tile_map_dirt[5]);
+					else if (
+						n->m_tile == tile_type::air  && s->m_tile == tile_type::dirt &&
+						w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
+						gfx.draw_surface(x, y, tile_map_dirt[1]);
+					else if (
+						n->m_tile == tile_type::air  && s->m_tile == tile_type::air  &&
+						w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
+						gfx.draw_surface(x, y, tile_map_dirt[13]);
+				}
+			}
+		}
 	}
 
 	// easy way out:
-	gfx.draw_rect(0, 0, 32, Graphics::ScreenHeight, Colors::White);
-	gfx.draw_rect(Graphics::ScreenWidth - 32, 0, 32, Graphics::ScreenHeight, Colors::White);
-	gfx.draw_rect(0, 0, Graphics::ScreenWidth, 32, Colors::White);
-	gfx.draw_rect(0, Graphics::ScreenHeight - 32, Graphics::ScreenWidth, 32, Colors::White);
+	gfx.draw_rect(0, 0, tile_size, Graphics::ScreenHeight, Colors::White);
+	gfx.draw_rect(Graphics::ScreenWidth - tile_size, 0, tile_size, Graphics::ScreenHeight, Colors::White);
+	gfx.draw_rect(0, 0, Graphics::ScreenWidth, tile_size, Colors::White);
+	gfx.draw_rect(0, Graphics::ScreenHeight - tile_size, Graphics::ScreenWidth, tile_size, Colors::White);
 }

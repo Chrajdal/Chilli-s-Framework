@@ -1,14 +1,14 @@
 #include "node.h"
 
-Node::Node(int x, int y, const Surface * s, const Trect<double> & boundary)
+Node::Node(int x, int y, const tile_type & ttile, const Trect<double> & boundary)
 	: m_x(x), m_y(y),
 	m_nw(NULL), m_ne(NULL), m_sw(NULL), m_se(NULL),
-	m_tile_data(s), m_boundary(boundary)
+	m_tile(ttile), m_boundary(boundary)
 {}
 Node::Node(const Node & src)
 	: m_x(src.m_x), m_y(src.m_y),
 	m_nw(NULL), m_ne(NULL), m_sw(NULL), m_se(NULL),
-	m_tile_data(src.m_tile_data),
+	m_tile(src.m_tile),
 	m_boundary(src.m_boundary)
 {}
 
@@ -23,7 +23,7 @@ Node & Node::operator = (const Node & src)
 	m_ne = NULL;
 	m_sw = NULL;
 	m_se = NULL;
-	m_tile_data = src.m_tile_data;
+	m_tile = src.m_tile;
 	m_x = src.m_x;
 	m_y = src.m_y;
 	m_boundary = src.m_boundary;
@@ -33,7 +33,6 @@ Node & Node::operator = (const Node & src)
 Node::~Node(void)
 {
 	delete m_nw; delete m_ne; delete m_sw; delete m_se;
-	m_tile_data = NULL;
 }
 
 bool Node::insert(const Node & n)
@@ -52,7 +51,7 @@ bool Node::insert(const Node & n)
 		{
 			if (m_nw == NULL)
 			{
-				m_nw = new Node(n.m_x, n.m_y, n.m_tile_data, { m_boundary.m_upleft, middle });
+				m_nw = new Node(n.m_x, n.m_y, n.m_tile, { m_boundary.m_upleft, middle });
 				return true;
 			}
 			else
@@ -62,7 +61,7 @@ bool Node::insert(const Node & n)
 		{
 			if (m_sw == NULL)
 			{
-				m_sw = new Node(n.m_x, n.m_y, n.m_tile_data,
+				m_sw = new Node(n.m_x, n.m_y, n.m_tile,
 					{ { m_boundary.m_upleft.m_x, middle.m_y },
 					{ middle.m_x, m_boundary.m_downright.m_y } });
 				return true;
@@ -77,7 +76,7 @@ bool Node::insert(const Node & n)
 		{
 			if (m_ne == NULL)
 			{
-				m_ne = new Node(n.m_x, n.m_y, n.m_tile_data,
+				m_ne = new Node(n.m_x, n.m_y, n.m_tile,
 					{ { middle.m_x, m_boundary.m_upleft.m_y },
 					{ m_boundary.m_downright.m_x, middle.m_y } });
 				return true;
@@ -90,26 +89,13 @@ bool Node::insert(const Node & n)
 		{
 			if (m_se == NULL)
 			{
-				m_se = new Node(n.m_x, n.m_y, n.m_tile_data, { middle, m_boundary.m_downright });
+				m_se = new Node(n.m_x, n.m_y, n.m_tile, { middle, m_boundary.m_downright });
 				return true;
 			}
 			else
 				return m_se->insert(n);
 		}
 	}
-}
-
-void Node::Draw(Graphics & gfx, int camx, int camy) const
-{
-	//if (m_nw != NULL) m_nw->Draw(gfx, camx, camy);
-	//if (m_ne != NULL) m_ne->Draw(gfx, camx, camy);
-	//if (m_sw != NULL) m_sw->Draw(gfx, camx, camy);
-	//if (m_se != NULL) m_se->Draw(gfx, camx, camy);
-	//
-	//if (m_x + camx < 0 || m_x + camx >= Graphics::ScreenWidth ||
-	//	m_y + camy < 0 || m_y + camy >= Graphics::ScreenHeight)
-	//	return;
-	//gfx.PutPixel(m_x + camx, m_y + camy, m_tile_data->GetPixel(0, 0));
 }
 
 void Node::range(vector<const Node *> & PointsInRange, Trect<double> & range) const
@@ -137,4 +123,23 @@ void Node::range(vector<const Node *> & PointsInRange, Trect<double> & range) co
 		if (range.CheckCollide(m_se->m_boundary))
 			m_se->range(PointsInRange, range);
 	}
+}
+
+const Node * Node::at(int x, int y) const
+{
+	if (m_x == x && m_y == y)
+		return this;
+	if (m_boundary.contains(x, y))
+	{
+		if (m_nw != NULL)
+			return m_nw->at(x, y);
+		if (m_ne != NULL)
+			return m_ne->at(x, y);
+		if (m_sw != NULL)
+			return m_sw->at(x, y);
+		if (m_se != NULL)
+			return m_se->at(x, y);
+	}
+	else
+		return NULL;
 }
