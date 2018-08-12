@@ -24,8 +24,9 @@ Game::Game(MainWindow & wnd)
 	gfx(wnd)
 {
 	// Load assets:
-	for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
-		for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
+	
+	for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
+		for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
 			tile_map_dirt.push_back(Surface(&tile_sheet_dirt, i * tile_size, j * tile_size, tile_size, tile_size));
 	//for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
 	//	for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
@@ -85,16 +86,6 @@ void Game::HandleInput()
 	//		tree.insert(Node(x, y, &tile_map_dirt[idx]));
 	//	}
 	//}
-
-	if (wnd.kbd.KeyIsPressed(VK_DELETE))
-	{
-		tree.clear();
-		//tile_map_dirt.clear();
-		//for (int i = 0; i < rainbow.size(); ++i)
-		//{
-		//	//tile_map_dirt.push_back(Surface(rainbow[i]));
-		//}
-	}
 }
 
 void Game::UpdateModel()
@@ -115,14 +106,14 @@ void Game::UpdateModel()
 			{
 				tree.insert(Node(x, y, tile_type::air));
 			}
-			else if (height_treshold < j)
+			else if (height_treshold <= j)
 			{
 				tree.insert(Node(x, y, tile_type::dirt));
 			}
-			else if (height_treshold * 5 < j)
-			{
-				tree.insert(Node(x, y, tile_type::stone));
-			}
+			//else if (height_treshold * 5 < j)
+			//{
+			//	//tree.insert(Node(x, y, tile_type::stone));
+			//}
 		}
 	}
 }
@@ -149,40 +140,55 @@ void Game::ComposeFrame()
 		{
 			if (i->m_tile == tile_type::dirt)
 			{
-				//gfx.draw_surface(x, y, tile_map_dirt[5]);
-
-				const Node * n = tree.at(i->m_x, i->m_y + 1);
-				const Node * s = tree.at(i->m_x, i->m_y - 1);
-				const Node * w = tree.at(i->m_x - 1, i->m_y);
-				const Node * e = tree.at(i->m_x + 1, i->m_y);
-				cout << string(50, '*') << endl;
-				if (n == NULL)
-					cout << "n is NULL" << endl;
-				if (s == NULL)
-					cout << "s is NULL" << endl;
-				if (w == NULL)
-					cout << "w is NULL" << endl;
-				if (e == NULL)
-					cout << "e is NULL" << endl;
-				cout << string(50, '*') << endl;
-				if (n != NULL && s != NULL && w != NULL && e != NULL)
+				vector<const Node *> up = tree.range(Trect<double>(Tpoint<double>(i->m_x - 0.5, i->m_y - 1.0 - 0.5), Tpoint<double>(i->m_x + 0.5, i->m_y - 1.0 + 0.5)));
+				vector<const Node *> dw = tree.range(Trect<double>(Tpoint<double>(i->m_x - 0.5, i->m_y + 1.0 - 0.5), Tpoint<double>(i->m_x + 0.5, i->m_y + 1.0 + 0.5)));
+				vector<const Node *> lf = tree.range(Trect<double>(Tpoint<double>(i->m_x + 1.0 - 0.5, i->m_y - 0.5), Tpoint<double>(i->m_x + 1.0 + 0.5, i->m_y + 0.5)));
+				vector<const Node *> rt = tree.range(Trect<double>(Tpoint<double>(i->m_x - 1.0 - 0.5, i->m_y - 0.5), Tpoint<double>(i->m_x - 1.0 + 0.5, i->m_y + 0.5)));
+				if (!up.empty() && !dw.empty() && !lf.empty() && !rt.empty())
 				{
-					if (n->m_tile == tile_type::air && s->m_tile == tile_type::air &&
-						w->m_tile == tile_type::air && e->m_tile == tile_type::air)
-						gfx.draw_surface(x, y, tile_map_dirt[15]);
+					if (
+						up[0]->m_tile == tile_type::air && dw[0]->m_tile == tile_type::dirt &&
+						lf[0]->m_tile == tile_type::air && rt[0]->m_tile == tile_type::dirt)
+						gfx.draw_surface_alpha(x, y, tile_map_dirt[0], Colors::White);
 					else if (
-						n->m_tile == tile_type::dirt && s->m_tile == tile_type::dirt &&
-						w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
-						gfx.draw_surface(x, y, tile_map_dirt[5]);
+						up[0]->m_tile == tile_type::air  && dw[0]->m_tile == tile_type::dirt &&
+						lf[0]->m_tile == tile_type::dirt && rt[0]->m_tile == tile_type::dirt)
+						gfx.draw_surface_alpha(x, y, tile_map_dirt[1], Colors::White);
 					else if (
-						n->m_tile == tile_type::air  && s->m_tile == tile_type::dirt &&
-						w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
-						gfx.draw_surface(x, y, tile_map_dirt[1]);
+						up[0]->m_tile == tile_type::air  && dw[0]->m_tile == tile_type::dirt &&
+						lf[0]->m_tile == tile_type::dirt && rt[0]->m_tile == tile_type::air)
+						gfx.draw_surface_alpha(x, y, tile_map_dirt[2], Colors::White);
 					else if (
-						n->m_tile == tile_type::air  && s->m_tile == tile_type::air  &&
-						w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
-						gfx.draw_surface(x, y, tile_map_dirt[13]);
+						up[0]->m_tile == tile_type::air && dw[0]->m_tile == tile_type::dirt &&
+						lf[0]->m_tile == tile_type::air && rt[0]->m_tile == tile_type::air)
+						gfx.draw_surface_alpha(x, y, tile_map_dirt[3], Colors::White);
+					//if (up[0]->m_tile == tile_type::dirt && dw[0]->m_tile == tile_type::dirt &&
+					//	lf[0]->m_tile == tile_type::dirt && rt[0]->m_tile == tile_type::dirt)
+					else
+					{
+						gfx.draw_surface_alpha(x, y, tile_map_dirt[5], Colors::White);
+					}
+						
 				}
+
+				//if (n != NULL && s != NULL && w != NULL && e != NULL)
+				//{
+				//	if (n->m_tile == tile_type::air && s->m_tile == tile_type::air &&
+				//		w->m_tile == tile_type::air && e->m_tile == tile_type::air)
+				//		gfx.draw_surface(x, y, tile_map_dirt[15]);
+				//	else if (
+				//		n->m_tile == tile_type::dirt && s->m_tile == tile_type::dirt &&
+				//		w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
+				//		gfx.draw_surface(x, y, tile_map_dirt[5]);
+				//	else if (
+				//		n->m_tile == tile_type::air  && s->m_tile == tile_type::dirt &&
+				//		w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
+				//		gfx.draw_surface(x, y, tile_map_dirt[1]);
+				//	else if (
+				//		n->m_tile == tile_type::air  && s->m_tile == tile_type::air  &&
+				//		w->m_tile == tile_type::dirt && e->m_tile == tile_type::dirt)
+				//		gfx.draw_surface(x, y, tile_map_dirt[13]);
+				//}
 			}
 		}
 	}

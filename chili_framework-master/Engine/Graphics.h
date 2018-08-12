@@ -74,4 +74,6 @@ public:
 
 	void draw_bitmap(int x, int y, const Bitmap & bmp);
 	void draw_surface(int x, int y, const Surface & srf);
+
+	void draw_surface_alpha(int x, int y, const Surface & srf, const Color & aplha);
 };

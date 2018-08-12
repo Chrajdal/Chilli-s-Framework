@@ -515,3 +515,16 @@ void Graphics::draw_surface(int x, int y, const Surface & srf)
 	//	}
 	//}
 }
+
+void Graphics::draw_surface_alpha(int x, int y, const Surface & srf, const Color & alpha)
+{
+	for (int i = 0; i < srf.height(); ++i)
+	{
+		std::copy_if(
+			srf.get_data() + i * srf.width(),
+			srf.get_data() + i * srf.width() + srf.width(),
+			pSysBuffer + (y + i) * ScreenWidth + x,
+			[alpha](const Color & c) {return c.dword != alpha.dword; });
+	}
+		
+}

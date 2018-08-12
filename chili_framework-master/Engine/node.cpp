@@ -125,20 +125,20 @@ void Node::range(vector<const Node *> & PointsInRange, Trect<double> & range) co
 	}
 }
 
-const Node * Node::at(int x, int y) const
+const Node * Node::at(int x, int y, const Node * n) const
 {
 	if (m_x == x && m_y == y)
-		return this;
+		n = this;
 	if (m_boundary.contains(x, y))
 	{
 		if (m_nw != NULL)
-			return m_nw->at(x, y);
+			return m_nw->at(x, y, n);
 		if (m_ne != NULL)
-			return m_ne->at(x, y);
+			return m_ne->at(x, y, n);
 		if (m_sw != NULL)
-			return m_sw->at(x, y);
+			return m_sw->at(x, y, n);
 		if (m_se != NULL)
-			return m_se->at(x, y);
+			return m_se->at(x, y, n);
 	}
 	else
 		return NULL;
