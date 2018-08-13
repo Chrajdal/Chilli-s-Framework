@@ -9,8 +9,8 @@ public:
 		:
 		player_sprite(&bmp,0,0,bmp.width,bmp.height)
 	{
-		m_x = 0;
-		m_y = 0;
+		m_x = 0.0;
+		m_y = 0.0;
 	}
 
 	Surface player_sprite;
@@ -33,9 +33,31 @@ int framecount = 0;
 double time_concatenated = 0.0;
 constexpr double dmax = std::numeric_limits<double>::max();
 constexpr double dmin = std::numeric_limits<double>::lowest();
-constexpr double tile_size = 16;
+constexpr int tile_size = 16;
 tile_type selected_tile = tile_type::dirt;
 Player player(player_bmp);
+
+//struct v2d
+//{
+//	double x;
+//	double y;
+//};
+
+v2d screen_to_world(const v2d & rhs, const Camera & cam)
+{
+	v2d res;
+	res.x = (rhs.x + cam.m_x) * tile_size;
+	res.y = (rhs.y + cam.m_y) * tile_size;
+	return res;
+}
+
+v2d world_to_screen(const v2d & rhs, const Camera & cam)
+{
+	v2d res;
+	res.x = (rhs.x + cam.m_x) / tile_size;
+	res.y = (rhs.y + cam.m_y) / tile_size;
+	return res;
+}
 
 void load_from_file(void)
 {
@@ -48,6 +70,13 @@ Game::Game(MainWindow & wnd)
 	gfx(wnd)
 {
 	// Load assets:
+	v2d a;
+	a.x = Graphics::ScreenWidth / 2 - player.player_sprite.width() / 2;
+	a.y = Graphics::ScreenHeight / 2 - player.player_sprite.height() / 2;
+	v2d tmp = screen_to_world(a, cam);
+	player.m_x = tmp.x;
+	player.m_y = tmp.y;
+	
 	auto hndl = std::async(std::launch::async, load_from_file);
 
 	for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
@@ -58,8 +87,9 @@ Game::Game(MainWindow & wnd)
 		for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
 			tile_map_stone.push_back(Surface(&tile_sheet_stone, i * tile_size, j * tile_size, tile_size, tile_size));
 
-	//tree.LoadFromFile("save_file.txt");
 	hndl.get();
+
+
 }
 
 Game::~Game(void)
@@ -90,7 +120,7 @@ void Game::Go()
 
 void Game::HandleInput()
 {
-	double speed = 1e1;
+	double speed = 7e0;
 	if (wnd.kbd.KeyIsPressed(VK_UP) || wnd.kbd.KeyIsPressed(0x57))
 	{
 		cam.m_y -= speed;
@@ -131,40 +161,48 @@ void Game::HandleInput()
 
 		if (wnd.mouse.LeftIsPressed())
 		{
-			Node * tmp = tree.access(x, y);
+			Node * tmp = tree.access((int)x, (int)y);
 			tmp->m_tile = tile_type::air;
 		}
 		if (wnd.mouse.RightIsPressed())
 		{
-			Node * tmp = tree.access(x, y);
+			Node * tmp = tree.access((int)x, (int)y);
 			tmp->m_tile = selected_tile;
 		}
+	}
+
+	if (wnd.kbd.KeyIsPressed(VK_DELETE))
+	{
+		tree.clear();
 	}
 }
 
 void Game::UpdateModel()
 {	
-
-
 	int tmp = -200;
-	for (int i = (tmp + 0 + cam.m_x) / tile_size; i < (1024 + cam.m_x - tmp) / tile_size; ++i)
+	for (int i = (int)((tmp + 0 + cam.m_x) / tile_size); i < (int)((1024 + cam.m_x - tmp) / tile_size); ++i)
 	{
-		for (int j = (tmp + 0 + cam.m_y) / tile_size; j < (1024 + cam.m_y - tmp) / tile_size; ++j)
+		for (int j = (int)((tmp + 0 + cam.m_y) / tile_size); j < (int)((1024 + cam.m_y - tmp) / tile_size); ++j)
 		{
 			double height_treshold = perlin::noise(/*i * dx * 0.1, */ perlin::noise(i * dx * 0.05)) * 100;
-
+			double stone_threshold = perlin::noise(j * dx * 0.1) * 200;
 			int x = i;
 			int y = j;
 			if (height_treshold > j)
 			{
 				tree.insert(Node(x, y, tile_type::air));
 			}
-			else if (height_treshold <= j)
+			else if (height_treshold <= j && height_treshold > j - stone_threshold)
 			{
-				//if (rand() % 1000 > 33)
+				tree.insert(Node(x, y, tile_type::dirt));
+			}
+			else if (height_treshold <= j - stone_threshold)
+			{
+				double noise = perlin::noise(i * dx, j * dy);
+				if (noise > 0.0)
 					tree.insert(Node(x, y, tile_type::dirt));
-				//else
-				//	tree.insert(Node(x, y, tile_type::stone));
+				else
+					tree.insert(Node(x, y, tile_type::stone));
 			}
 		}
 	}
@@ -184,8 +222,8 @@ void Game::ComposeFrame()
 	vector<const Node *> vec = tree.range(screen);
 	for (const auto & i : vec)
 	{
-		int x = i->m_x * tile_size - cam.m_x;
-		int y = i->m_y * tile_size - cam.m_y;
+		int x = (int)(i->m_x * tile_size - cam.m_x);
+		int y = (int)(i->m_y * tile_size - cam.m_y);
 
 		if (x >= 0 && x + tile_size < Graphics::ScreenWidth  &&
 			y >= 0 && y + tile_size < Graphics::ScreenHeight)
@@ -242,10 +280,18 @@ void Game::ComposeFrame()
 			}
 		}
 	}
+	v2d tmp;
+	tmp.x = player.m_x;
+	tmp.y = player.m_y;
+	v2d player_pos = world_to_screen(tmp, cam);
+	gfx.draw_surface_alpha((int)player_pos.x, (int)player_pos.y, player.player_sprite, Colors::White);
 
 	// easy way out:
-	gfx.draw_rect(0, 0, tile_size, Graphics::ScreenHeight, Colors::White);
-	gfx.draw_rect(Graphics::ScreenWidth - tile_size, 0, tile_size, Graphics::ScreenHeight, Colors::White);
-	gfx.draw_rect(0, 0, Graphics::ScreenWidth, tile_size, Colors::White);
-	gfx.draw_rect(0, Graphics::ScreenHeight - tile_size, Graphics::ScreenWidth, tile_size, Colors::White);
+	gfx.draw_rect(0, 0, (int)tile_size, Graphics::ScreenHeight, Colors::White);
+	gfx.draw_rect((int)Graphics::ScreenWidth - tile_size, 0, (int)tile_size, Graphics::ScreenHeight, Colors::White);
+	gfx.draw_rect(0, 0, Graphics::ScreenWidth, (int)tile_size, Colors::White);
+	gfx.draw_rect(0, (int)Graphics::ScreenHeight - tile_size, Graphics::ScreenWidth, (int)tile_size, Colors::White);
+
+	gfx.draw_line(0, 0, Graphics::ScreenWidth - 1, Graphics::ScreenHeight - 1, Colors::Gray);
+	gfx.draw_line(Graphics::ScreenWidth - 1, 0, 0, Graphics::ScreenHeight - 1, Colors::Gray);
 }

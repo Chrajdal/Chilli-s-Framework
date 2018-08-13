@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "Random.h"
 #include "Camera.h"
+#include "geometry.h"
 
 #include "quad_tree.h"
 
