@@ -6,6 +6,8 @@
 #include "Vec2.h"
 #include "node.h"
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 class QuadTree
 {
@@ -22,6 +24,10 @@ public:
 	void clear(void);
 	unsigned size(void) const;
 	Trect<double> boundary(void) const;
+
+	void SaveToFile(const string & file_name);
+	void LoadFromFile(const string & file_name);
+
 
 private:
 	Node * m_root;

@@ -2,10 +2,27 @@
 
 inline ostream & nl(ostream & os) { return os << "\n"; }
 
+class Player
+{
+public:
+	Player(const Bitmap & bmp)
+		:
+		player_sprite(&bmp,0,0,bmp.width,bmp.height)
+	{
+		m_x = 0;
+		m_y = 0;
+	}
+
+	Surface player_sprite;
+	double m_x;
+	double m_y;
+};
+
 QuadTree tree;
 Camera cam;
 Bitmap tile_sheet_dirt(".\\Assets\\grass.bmp");
 Bitmap tile_sheet_stone(".\\Assets\\stone.bmp");
+Bitmap player_bmp(".\\Assets\\Main Character.bmp");
 vector<Surface> tile_map_dirt;
 vector<Surface> tile_map_stone;
 vector<Color> rainbow;
@@ -18,7 +35,12 @@ constexpr double dmax = std::numeric_limits<double>::max();
 constexpr double dmin = std::numeric_limits<double>::lowest();
 constexpr double tile_size = 16;
 tile_type selected_tile = tile_type::dirt;
+Player player(player_bmp);
 
+void load_from_file(void)
+{
+	tree.LoadFromFile("save_file.txt");
+}
 
 Game::Game(MainWindow & wnd)
 	:
@@ -26,22 +48,23 @@ Game::Game(MainWindow & wnd)
 	gfx(wnd)
 {
 	// Load assets:
+	auto hndl = std::async(std::launch::async, load_from_file);
+
 	for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
-	{
 		for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
-		{
 			tile_map_dirt.push_back(Surface(&tile_sheet_dirt, i * tile_size, j * tile_size, tile_size, tile_size));
-		}
-	}
-	
+
 	for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
-	{
 		for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
-		{
 			tile_map_stone.push_back(Surface(&tile_sheet_stone, i * tile_size, j * tile_size, tile_size, tile_size));
-		}
-	}
-	
+
+	//tree.LoadFromFile("save_file.txt");
+	hndl.get();
+}
+
+Game::~Game(void)
+{
+	tree.SaveToFile("save_file.txt");
 }
 
 void Game::Go()
@@ -121,6 +144,8 @@ void Game::HandleInput()
 
 void Game::UpdateModel()
 {	
+
+
 	int tmp = -200;
 	for (int i = (tmp + 0 + cam.m_x) / tile_size; i < (1024 + cam.m_x - tmp) / tile_size; ++i)
 	{

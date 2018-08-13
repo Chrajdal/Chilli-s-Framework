@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include <future>
 #include <array>
 #include <list>
 #include <algorithm>
@@ -37,6 +38,7 @@ public:
 	Game(class MainWindow& wnd);
 	Game(const Game&) = delete;
 	Game& operator=(const Game&) = delete;
+	~Game(void);
 	void Go();
 private:
 	void HandleInput();

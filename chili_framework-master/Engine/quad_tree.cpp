@@ -72,3 +72,45 @@ Trect<double> QuadTree::boundary(void) const
 		return Trect<double>();
 	return m_root->m_boundary;
 }
+
+void QuadTree::SaveToFile(const string & file_name)
+{
+	ofstream file(file_name, std::fstream::out);
+	if (!file.is_open())
+		throw file_name + " cannot be opened.";
+
+	if (m_root != NULL)
+	{
+		file << *m_root;
+	}
+	file.close();
+}
+
+void QuadTree::LoadFromFile(const string & file_name)
+{
+	ifstream file(file_name);
+	if (!file.is_open())
+		throw file_name + " cannot be opened.";
+
+	if (m_root != NULL)
+	{
+		delete m_root;
+		m_root = NULL;
+		m_size = 0;
+	}
+
+	while (true)
+	{
+		int x;
+		int y;
+		int tmp_tile;
+		char dummy;
+		file >> x >> y >> tmp_tile >> dummy;
+
+		this->insert(Node(x, y, static_cast<tile_type>(tmp_tile)));
+
+		if (file.eof())
+			break;
+	}
+	file.close();
+}
