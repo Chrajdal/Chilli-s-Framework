@@ -17,6 +17,8 @@ public:
 	vector<const Node *> range(Trect<double> & range) const;
 	const Node * at(int x, int y) const;
 
+	Node * access(int x, int y);
+
 	void clear(void);
 	unsigned size(void) const;
 	Trect<double> boundary(void) const;

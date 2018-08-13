@@ -142,6 +142,22 @@ Color hsv_to_rgb(const vector<double> & src);
 Color interpolation(const Color & a, const Color & b, double factor);
 vector<Color> generate_colors(const Color & start, const Color & end, int number_of_colors);
 //-----------------------------------------------------------------------------
+namespace custom_std
+{
+	template <class InputIterator, class OutputIterator, class UnaryPredicate>
+	OutputIterator copy_if(InputIterator first, InputIterator last,
+		OutputIterator result, UnaryPredicate pred)
+	{
+		while (first != last) {
+			if (pred(*first)) {
+				*result = *first;
+			}
+			++result;
+			++first;
+		}
+		return result;
+	}
+};
 
 namespace perlin {
 	static constexpr uint_fast8_t perm[512] = {

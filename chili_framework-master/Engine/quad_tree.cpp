@@ -46,6 +46,14 @@ const Node * QuadTree::at(int x, int y) const
 	}
 }
 
+Node * QuadTree::access(int x, int y)
+{
+	if (m_root == NULL)
+		return NULL;
+	else
+		return m_root->access(x, y);
+}
+
 void QuadTree::clear(void)
 {
 	delete m_root;

@@ -7,21 +7,13 @@ Surface::Surface(const Bitmap * src, int fromx, int fromy, int width, int height
 	w = width;
 	h = height;
 	m_data = new Color[w*h];
-	std::fill_n(m_data, w * h, src->data()[x + y * w]);
+	//std::fill_n(m_data, w * h, src->data()[x + y * w]);
 	
-	//m_data[16 * 16] = Colors::Green;
-
-	//std::copy_n(m_data, w, src->data() + src->width);
-	//std::copy_n(m_data + w, w, src->data() + w + src->width);
-
 	int idx = 0;
 	for (int i = fromy; i < fromy + height; ++i)
 	{
-		std::copy_n(src->data() + fromx + i * src->width, w, m_data + (idx++) * w);
+		std::copy_n(src->data() + i * src->width + fromx, width, m_data + (idx++) * width);
 	}
-
-	//std::copy_n(src->data() + fromx + fromy * width, w, m_data);
-	//std::copy_n(src->data() + fromx + 2*fromy * width, w, m_data);
 }
 
 Surface::Surface(const Surface & src)

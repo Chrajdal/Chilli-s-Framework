@@ -6,6 +6,7 @@
 #include "Colors.h"
 #include "Bitmap.h"
 #include "Surface.h"
+#include "utils.h"
 
 #define GMINY 0
 #define GMAXY (Graphics::ScreenHeight - 1)

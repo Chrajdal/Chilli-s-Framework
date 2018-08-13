@@ -19,6 +19,8 @@ public:
 	bool insert(const Node & n);
 	void range(vector<const Node *> & PointsInRange, Trect<double> & range) const;
 	const Node * at(int x, int y, const Node * n) const;
+	Node * access(int x, int y);
+
 
 	int m_x;
 	int m_y;
