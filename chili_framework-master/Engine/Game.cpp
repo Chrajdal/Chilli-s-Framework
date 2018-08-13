@@ -292,6 +292,4 @@ void Game::ComposeFrame()
 	gfx.draw_rect(0, 0, Graphics::ScreenWidth, (int)tile_size, Colors::White);
 	gfx.draw_rect(0, (int)Graphics::ScreenHeight - tile_size, Graphics::ScreenWidth, (int)tile_size, Colors::White);
 
-	gfx.draw_line(0, 0, Graphics::ScreenWidth - 1, Graphics::ScreenHeight - 1, Colors::Gray);
-	gfx.draw_line(Graphics::ScreenWidth - 1, 0, 0, Graphics::ScreenHeight - 1, Colors::Gray);
 }
