@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <functional>
 #include <cassert>
+#include <bitset>
 #include <cstdlib>
 #include <chrono>
 #include <cassert>

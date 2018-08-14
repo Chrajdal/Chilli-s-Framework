@@ -7,6 +7,8 @@
 #include "Bitmap.h"
 #include "Surface.h"
 #include "utils.h"
+#include <wtypes.h>
+#include <Windows.h>
 
 #define GMINY 0
 #define GMAXY (Graphics::ScreenHeight - 1)

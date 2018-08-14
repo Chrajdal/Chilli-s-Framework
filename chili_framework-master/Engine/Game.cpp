@@ -43,19 +43,19 @@ Player player(player_bmp);
 //	double y;
 //};
 
-v2d screen_to_world(const v2d & rhs, const Camera & cam)
+v2d screen_to_world(double x, double y, const Camera & cam)
 {
 	v2d res;
-	res.x = (rhs.x + cam.m_x) * tile_size;
-	res.y = (rhs.y + cam.m_y) * tile_size;
+	res.x = (x + cam.m_x) / tile_size;
+	res.y = (y + cam.m_y) / tile_size;
 	return res;
 }
 
-v2d world_to_screen(const v2d & rhs, const Camera & cam)
+v2d world_to_screen(double x, double y, const Camera & cam)
 {
 	v2d res;
-	res.x = (rhs.x + cam.m_x) / tile_size;
-	res.y = (rhs.y + cam.m_y) / tile_size;
+	res.x = (x + cam.m_x) * tile_size;
+	res.y = (y + cam.m_y) * tile_size;
 	return res;
 }
 
@@ -73,7 +73,7 @@ Game::Game(MainWindow & wnd)
 	v2d a;
 	a.x = Graphics::ScreenWidth / 2 - player.player_sprite.width() / 2;
 	a.y = Graphics::ScreenHeight / 2 - player.player_sprite.height() / 2;
-	v2d tmp = screen_to_world(a, cam);
+	v2d tmp = screen_to_world(a.x, a.y, cam);
 	player.m_x = tmp.x;
 	player.m_y = tmp.y;
 	
@@ -150,23 +150,26 @@ void Game::HandleInput()
 
 	if (wnd.mouse.IsInWindow())
 	{
-		double x = wnd.mouse.GetPosX();
-		double y = wnd.mouse.GetPosY();
+		int x = wnd.mouse.GetPosX();
+		int y = wnd.mouse.GetPosY();
 
-		x += cam.m_x;
-		y += cam.m_y;
+		v2d world_pos = screen_to_world(x, y, cam);
 
-		x /= tile_size;
-		y /= tile_size;
+		//x += cam.m_x;
+		//y += cam.m_y;
+		//
+		//x /= tile_size;
+		//y /= tile_size;
+		
 
 		if (wnd.mouse.LeftIsPressed())
 		{
-			Node * tmp = tree.access((int)x, (int)y);
+			Node * tmp = tree.access(std::floor(world_pos.x),std::floor(world_pos.y));
 			tmp->m_tile = tile_type::air;
 		}
 		if (wnd.mouse.RightIsPressed())
 		{
-			Node * tmp = tree.access((int)x, (int)y);
+			Node * tmp = tree.access(std::floor(world_pos.x), std::floor(world_pos.y));
 			tmp->m_tile = selected_tile;
 		}
 	}
@@ -208,6 +211,43 @@ void Game::UpdateModel()
 	}
 }
 
+Surface const & pick_correct_tile_sprite(int x, int y, const vector<Surface> & tile_map, const QuadTree & terrain)
+{
+	vector<const Node *> up = terrain.range(Trect<double>(Tpoint<double>(x - 0.5, y - 1.0 - 0.5), Tpoint<double>(x + 0.5, y - 1.0 + 0.5)));
+	vector<const Node *> dw = terrain.range(Trect<double>(Tpoint<double>(x - 0.5, y + 1.0 - 0.5), Tpoint<double>(x + 0.5, y + 1.0 + 0.5)));
+	vector<const Node *> lf = terrain.range(Trect<double>(Tpoint<double>(x - 1.0 - 0.5, y - 0.5), Tpoint<double>(x - 1.0 + 0.5, y + 0.5)));
+	vector<const Node *> rt = terrain.range(Trect<double>(Tpoint<double>(x + 1.0 - 0.5, y - 0.5), Tpoint<double>(x + 1.0 + 0.5, y + 0.5)));
+	if (!up.empty() && !dw.empty() && !lf.empty() && !rt.empty())
+	{
+		bitset<4> draw_flag;
+		draw_flag[3] = bool(up[0]->m_tile != tile_type::air);
+		draw_flag[2] = bool(dw[0]->m_tile != tile_type::air);
+		draw_flag[1] = bool(lf[0]->m_tile != tile_type::air);
+		draw_flag[0] = bool(rt[0]->m_tile != tile_type::air);
+		uint8_t flag = draw_flag.to_ulong();
+
+		switch (flag)
+		{
+		case 0: return tile_map[15];
+		case 1: return tile_map[12];
+		case 2: return tile_map[14];
+		case 3: return tile_map[13];
+		case 4: return tile_map[3];
+		case 5: return tile_map[0];
+		case 6: return tile_map[2];
+		case 7: return tile_map[1];
+		case 8: return tile_map[11];
+		case 9: return tile_map[8];
+		case 10: return tile_map[10];
+		case 11: return tile_map[9];
+		case 12: return tile_map[7];
+		case 13: return tile_map[4];
+		case 14: return tile_map[6];
+		case 15: return tile_map[5];
+		}
+	}
+}
+
 void Game::ComposeFrame()
 {
 	// offset screen by cam
@@ -230,49 +270,96 @@ void Game::ComposeFrame()
 		{
 			if (i->m_tile == tile_type::dirt)
 			{
+				const Surface & s = pick_correct_tile_sprite(i->m_x, i->m_y, tile_map_dirt, tree);
+				gfx.draw_surface_alpha(x, y, s, Colors::White);
+
+				/*
 				vector<const Node *> up = tree.range(Trect<double>(Tpoint<double>(i->m_x - 0.5, i->m_y - 1.0 - 0.5), Tpoint<double>(i->m_x + 0.5, i->m_y - 1.0 + 0.5)));
 				vector<const Node *> dw = tree.range(Trect<double>(Tpoint<double>(i->m_x - 0.5, i->m_y + 1.0 - 0.5), Tpoint<double>(i->m_x + 0.5, i->m_y + 1.0 + 0.5)));
 				vector<const Node *> lf = tree.range(Trect<double>(Tpoint<double>(i->m_x - 1.0 - 0.5, i->m_y - 0.5), Tpoint<double>(i->m_x - 1.0 + 0.5, i->m_y + 0.5)));
 				vector<const Node *> rt = tree.range(Trect<double>(Tpoint<double>(i->m_x + 1.0 - 0.5, i->m_y - 0.5), Tpoint<double>(i->m_x + 1.0 + 0.5, i->m_y + 0.5)));
 				if (!up.empty() && !dw.empty() && !lf.empty() && !rt.empty())
 				{
-					if (
-						up[0]->m_tile != tile_type::dirt && dw[0]->m_tile == tile_type::dirt &&
-						lf[0]->m_tile != tile_type::dirt && rt[0]->m_tile == tile_type::dirt)
+					bitset<4> draw_flag;
+
+					draw_flag[3] = bool(up[0]->m_tile != tile_type::air);
+					draw_flag[2] = bool(dw[0]->m_tile != tile_type::air);
+					draw_flag[1] = bool(lf[0]->m_tile != tile_type::air);
+					draw_flag[0] = bool(rt[0]->m_tile != tile_type::air);
+
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[0], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[1], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[2], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[3], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[4], Colors::White);
+					//
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[6], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[7], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[8], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[9], Colors::White);
+					//
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[10], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[11], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[12], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[13], Colors::White);
+					//gfx.draw_surface_alpha(x, y, tile_map_dirt[14], Colors::White);
+
+					// UP DW LF RT
+					// 0 there is NO dirt at the place --- 1 there IS dirt at the place
+
+					uint8_t flag = draw_flag.to_ulong();
+					switch (flag)
 					{
-						gfx.draw_surface_alpha(x, y, tile_map_dirt[0], Colors::White);
-					}
-					else if (
-						up[0]->m_tile != tile_type::dirt && dw[0]->m_tile == tile_type::dirt &&
-						lf[0]->m_tile == tile_type::dirt && rt[0]->m_tile == tile_type::dirt)
-					{
-						gfx.draw_surface_alpha(x, y, tile_map_dirt[1], Colors::White);
-					}
-					else if (
-						up[0]->m_tile != tile_type::dirt && dw[0]->m_tile == tile_type::dirt &&
-						lf[0]->m_tile == tile_type::dirt && rt[0]->m_tile != tile_type::dirt)
-					{
-						gfx.draw_surface_alpha(x, y, tile_map_dirt[2], Colors::White);
-					}
-					else if (
-						up[0]->m_tile != tile_type::dirt && dw[0]->m_tile == tile_type::dirt &&
-						lf[0]->m_tile != tile_type::dirt && rt[0]->m_tile != tile_type::dirt)
-					{
-						gfx.draw_surface_alpha(x, y, tile_map_dirt[3], Colors::White);
-					}
-					else if (
-						up[0]->m_tile != tile_type::dirt && dw[0]->m_tile != tile_type::dirt &&
-						lf[0]->m_tile != tile_type::dirt && rt[0]->m_tile != tile_type::dirt)
-					{
-						gfx.draw_surface_alpha(x, y, tile_map_dirt[15], Colors::White);
-					}
-					//if (up[0]->m_tile == tile_type::dirt && dw[0]->m_tile == tile_type::dirt &&
-					//	lf[0]->m_tile == tile_type::dirt && rt[0]->m_tile == tile_type::dirt)
-					else
-					{
-						gfx.draw_surface_alpha(x, y, tile_map_dirt[5], Colors::White);
+					case 0: gfx.draw_surface_alpha(x, y, tile_map_dirt[15], Colors::White);
+						break; // 0000 - dirt nowhere
+
+					case 1: gfx.draw_surface_alpha(x, y, tile_map_dirt[12], Colors::White);
+						break; // 0001 - dirt only on RT - right side
+
+					case 2: gfx.draw_surface_alpha(x, y, tile_map_dirt[14], Colors::White);
+						break; // 0010 - dirt only on left side
+
+					case 3: gfx.draw_surface_alpha(x, y, tile_map_dirt[13], Colors::White);
+						break; // 0011
+
+					case 4: gfx.draw_surface_alpha(x, y, tile_map_dirt[3], Colors::White);
+						break; // 0100
+					
+					case 5: gfx.draw_surface_alpha(x, y, tile_map_dirt[0], Colors::White);
+						break; // 0101
+					
+					case 6: gfx.draw_surface_alpha(x, y, tile_map_dirt[2], Colors::White);
+						break; // 0110
+					
+					case 7: gfx.draw_surface_alpha(x, y, tile_map_dirt[1], Colors::White);
+						break; // 0111
+
+					case 8: gfx.draw_surface_alpha(x, y, tile_map_dirt[11], Colors::White);
+						break; // 1000
+
+					case 9: gfx.draw_surface_alpha(x, y, tile_map_dirt[8], Colors::White);
+						break; // 1001
+
+					case 10: gfx.draw_surface_alpha(x, y, tile_map_dirt[10], Colors::White);
+						break; // 1010
+
+					case 11: gfx.draw_surface_alpha(x, y, tile_map_dirt[9], Colors::White);
+						break; // 1011
+
+					case 12: gfx.draw_surface_alpha(x, y, tile_map_dirt[7], Colors::White);
+						break; // 1100
+
+					case 13: gfx.draw_surface_alpha(x, y, tile_map_dirt[4], Colors::White);
+						break; // 1101
+
+					case 14: gfx.draw_surface_alpha(x, y, tile_map_dirt[6], Colors::White);
+						break; // 1110
+
+					case 15: gfx.draw_surface_alpha(x, y, tile_map_dirt[5], Colors::White);
+						break; // 1111 - dirt everywhere
 					}
 				}
+				*/
 			}
 			if (i->m_tile == tile_type::stone)
 			{
@@ -280,11 +367,11 @@ void Game::ComposeFrame()
 			}
 		}
 	}
-	v2d tmp;
-	tmp.x = player.m_x;
-	tmp.y = player.m_y;
-	v2d player_pos = world_to_screen(tmp, cam);
-	gfx.draw_surface_alpha((int)player_pos.x, (int)player_pos.y, player.player_sprite, Colors::White);
+	//v2d tmp;
+	//tmp.x = player.m_x;
+	//tmp.y = player.m_y;
+	//v2d player_pos = world_to_screen(tmp.x, tmp.y, cam);
+	//gfx.draw_surface_alpha((int)player_pos.x, (int)player_pos.y, player.player_sprite, Colors::White);
 
 	// easy way out:
 	gfx.draw_rect(0, 0, (int)tile_size, Graphics::ScreenHeight, Colors::White);
