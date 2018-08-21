@@ -95,8 +95,8 @@ Game::Game(MainWindow & wnd)
 	a.x = Graphics::ScreenWidth / 2 - player.player_sprite.width() / 2;
 	a.y = Graphics::ScreenHeight / 2 - player.player_sprite.height() / 2;
 	v2d tmp = screen_to_world(a.x, a.y, cam);
-	player.m_x = tmp.x;
-	player.m_y = tmp.y;
+	player.pos.x = tmp.x;
+	player.pos.y = tmp.y;
 	
 	auto load_big_file_handle = std::async(std::launch::async, load_from_file);
 
