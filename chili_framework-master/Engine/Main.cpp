@@ -4,8 +4,10 @@
 
 int WINAPI wWinMain( HINSTANCE hInst,HINSTANCE,LPWSTR pArgs,INT )
 {
+#ifdef _DEBUG
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
+#endif
 
 	try
 	{

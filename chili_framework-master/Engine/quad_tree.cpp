@@ -88,9 +88,13 @@ void QuadTree::SaveToFile(const string & file_name)
 
 void QuadTree::LoadFromFile(const string & file_name)
 {
+	ifstream tmp_file(file_name);
+	if (!tmp_file.is_open())
+	{
+		this->SaveToFile(file_name);
+	}
+
 	ifstream file(file_name);
-	if (!file.is_open())
-		throw file_name + " cannot be opened.";
 
 	if (m_root != NULL)
 	{

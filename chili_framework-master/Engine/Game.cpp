@@ -7,15 +7,42 @@ class Player
 public:
 	Player(const Bitmap & bmp)
 		:
-		player_sprite(&bmp,0,0,bmp.width,bmp.height)
+		player_sprite(&bmp,0,0,bmp.width,bmp.height),
+		m_curr_state(PlayerState::stand)
 	{
-		m_x = 0.0;
-		m_y = 0.0;
+		pos.x = 0.0;
+		pos.y = 0.0;
+
+		vel.x = 0.0;
+		vel.y = 0.0;
+	}
+	void Update()
+	{
+		switch (m_curr_state)
+		{
+		case PlayerState::stand:
+			break;
+		case PlayerState::walk:
+			break;
+		case PlayerState::jump:
+			break;
+		case PlayerState::attack:
+			break;
+		}
 	}
 
+	enum PlayerState
+	{
+		stand,
+		walk,
+		jump,
+		attack
+	};
+
+	v2d pos;
+	v2d vel;
 	Surface player_sprite;
-	double m_x;
-	double m_y;
+	PlayerState m_curr_state;
 };
 
 QuadTree tree;
@@ -55,7 +82,7 @@ v2d world_to_screen(double x, double y, const Camera & cam)
 
 void load_from_file(void)
 {
-	tree.LoadFromFile("save_file.txt");
+	tree.LoadFromFile(".\\Save\\save_file.txt");
 }
 
 Game::Game(MainWindow & wnd)
@@ -71,7 +98,7 @@ Game::Game(MainWindow & wnd)
 	player.m_x = tmp.x;
 	player.m_y = tmp.y;
 	
-	auto hndl = std::async(std::launch::async, load_from_file);
+	auto load_big_file_handle = std::async(std::launch::async, load_from_file);
 
 	for (int j = 0; j < tile_sheet_dirt.height / tile_size; ++j)
 		for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
@@ -81,14 +108,12 @@ Game::Game(MainWindow & wnd)
 		for (int i = 0; i < tile_sheet_dirt.width / tile_size; ++i)
 			tile_map_stone.push_back(Surface(&tile_sheet_stone, i * tile_size, j * tile_size, tile_size, tile_size));
 
-	hndl.get();
-
-
+	load_big_file_handle.get();
 }
 
 Game::~Game(void)
 {
-	tree.SaveToFile("save_file.txt");
+	tree.SaveToFile(".\\Save\\save_file.txt");
 }
 
 void Game::Go()
@@ -157,7 +182,8 @@ void Game::HandleInput()
 		if (wnd.mouse.RightIsPressed())
 		{
 			Node * tmp = tree.access(std::floor(world_pos.x), std::floor(world_pos.y));
-			tmp->m_tile = selected_tile;
+			if(tmp->m_tile == tile_type::air)
+				tmp->m_tile = selected_tile;
 		}
 	}
 
@@ -274,6 +300,7 @@ void Game::ComposeFrame()
 	//gfx.draw_surface_alpha((int)player_pos.x, (int)player_pos.y, player.player_sprite, Colors::White);
 
 	// easy way out:
+	// todo gfx.draw_part_of_surface
 	gfx.draw_rect(0, 0, (int)tile_size, Graphics::ScreenHeight, Colors::White);
 	gfx.draw_rect((int)Graphics::ScreenWidth - tile_size, 0, (int)tile_size, Graphics::ScreenHeight, Colors::White);
 	gfx.draw_rect(0, 0, Graphics::ScreenWidth, (int)tile_size, Colors::White);
