@@ -4,11 +4,12 @@
 #include "Graphics.h"
 #include <fstream>
 #include <cassert>
+#include <string>
 
 class Bitmap
 {
 public:
-	Bitmap(const string & filename);
+	Bitmap(const std::string & filename);
 	Bitmap(const Bitmap & rhs);
 	~Bitmap();
 	Bitmap& operator = (const Bitmap & rhs);

@@ -27,6 +27,7 @@
 #include "Bitmap.h"
 #include "Font.h"
 #include "utils.h"
+#include "Random.h"
 
 class Game
 {

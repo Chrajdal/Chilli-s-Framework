@@ -1,6 +1,7 @@
 #include "utils.h"
 
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 int random_int(int min, int max)
 {
 	int range = max - min + 1;
@@ -35,7 +36,7 @@ double sq_distance(const Tpoint<double> & a, const Tpoint<double> & b)
 	return (double)((a.m_x - b.m_x) * (double)(a.m_x - b.m_x))
 		+ (double)((a.m_y - b.m_y) * (double)(a.m_y - b.m_y));
 }
-void gen_random(string & str, const int len)
+void gen_random(std::string & str, const int len)
 {
 	str = "";
 	static const char alphanum[] =
@@ -46,10 +47,10 @@ void gen_random(string & str, const int len)
 	for (int i = 0; i < len; ++i)
 		str += alphanum[rand() % (sizeof(alphanum) - 1)];
 }
-void gen_randascii(string & str, const int len)
+void gen_randascii(std::string & str, const int len)
 {
 	str = "";
-	static const char arr[] = "!\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+	static const char arr[] = "!\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 	for (int i = 0; i < len; ++i)
 		str += arr[rand() % (sizeof(arr) - 1)];
 }

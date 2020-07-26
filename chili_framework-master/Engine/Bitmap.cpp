@@ -1,9 +1,9 @@
 #include "Bitmap.h"
 
 
-Bitmap::Bitmap(const string& filename)
+Bitmap::Bitmap(const std::string& filename)
 {
-	ifstream file(filename, std::ios::binary);
+	std::ifstream file(filename, std::ios::binary);
 	if (!file.is_open())
 		throw filename + " cannot be opened.";
 

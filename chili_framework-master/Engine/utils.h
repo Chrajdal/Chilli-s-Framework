@@ -4,13 +4,14 @@
 #include <vector>
 #include <chrono>
 #include <string>
+#include <numeric>
 
 #include "Vec2.h"
 #include "Vec3.h"
 #include "Mat2.h"
 #include "Mat3.h"
 
-using namespace std;
+//using namespace std;
 using namespace std::chrono;
 
 
@@ -97,23 +98,28 @@ class CTimer
 public:
 	CTimer(void)
 	{
-		start = chrono::system_clock::now();
+		start = std::chrono::system_clock::now();
 	}
 	inline double elapsed(void) const
 	{
-		return (double)(chrono::duration_cast<chrono::milliseconds>
-			(chrono::system_clock::now() - start)).count();
+		return (double)(std::chrono::duration_cast<std::chrono::milliseconds>
+			(std::chrono::system_clock::now() - start)).count();
 	}
 	inline void restart(void)
 	{
-		start = chrono::system_clock::now();
+		start = std::chrono::system_clock::now();
 	}
 private:
-	chrono::time_point<chrono::system_clock> start;
+	std::chrono::time_point<std::chrono::system_clock> start;
 };
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
+template <typename T, typename U, typename V, typename W, typename X>
+T map_value(const T& value, const U& inmin, const V& inmax, const W& outmin, const X& outmax)
+{
+	return outmin + (value - inmin) * (outmax - outmin) / (inmax - inmin);
+}
 int random_int(int min, int max);
 float random_between(const float & min, const float & max);
 double random_between(const double & min, const double & max);
@@ -121,6 +127,6 @@ long sq_distance(const Tpoint<int> & a, const Tpoint<int> & b);
 long long sq_distance(const Tpoint <long> & a, const Tpoint<long> & b);
 double sq_distance(const Tpoint<float> & a, const Tpoint<float> & b);
 double sq_distance(const Tpoint<double> & a, const Tpoint<double> & b);
-void gen_random(string & str, const int len);
-void gen_randascii(string & str, const int len);
+void gen_random(std::string & str, const int len);
+void gen_randascii(std::string & str, const int len);
 //-----------------------------------------------------------------------------

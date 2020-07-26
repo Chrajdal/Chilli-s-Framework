@@ -3,6 +3,7 @@
 #include "Graphics.h"
 #include "Bitmap.h"
 #include <ctype.h>
+#include <string>
 
 class Font
 {
@@ -58,7 +59,7 @@ public:
 		//}		
 	}
 
-	void DrawString(Graphics & gfx, const string & str, int x, int y, int font_size, const Color & color) const
+	void DrawString(Graphics & gfx, const std::string & str, int x, int y, int font_size, const Color & color) const
 	{
 
 	}
