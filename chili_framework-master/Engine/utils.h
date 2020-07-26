@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include <string>
 
 #include "Vec2.h"
 #include "Vec3.h"
