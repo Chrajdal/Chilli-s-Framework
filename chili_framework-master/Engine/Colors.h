@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "Random.h"
 
 class Color
 {
@@ -85,8 +86,17 @@ public:
 	}
 };
 
+
+
 namespace Colors
 {
+	
+	static Color randomColor()
+	{
+		Random r;
+		return (r.next() << 16) | (r.next() << 8) | r.next();
+
+	}
 	static constexpr Color MakeRGB(unsigned char r, unsigned char g, unsigned char b)
 	{
 		return (r << 16) | (g << 8) | b;

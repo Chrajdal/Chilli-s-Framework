@@ -28,6 +28,7 @@
 #include "Font.h"
 #include "utils.h"
 #include "Random.h"
+#include <cmath>
 
 class Game
 {

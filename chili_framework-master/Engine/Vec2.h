@@ -152,6 +152,6 @@ public:
 	T y;
 };
 
-typedef Cvector2<float> Vec2;
-typedef Cvector2<double> Ved2;
-typedef Cvector2<int> Vei2;
+typedef Cvector2<float> float2;
+typedef Cvector2<double> double2;
+typedef Cvector2<int> int2;
