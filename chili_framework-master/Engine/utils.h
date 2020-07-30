@@ -5,6 +5,7 @@
 #include <chrono>
 #include <string>
 #include <numeric>
+#include <cmath>
 
 #include "Vec2.h"
 #include "Vec3.h"
@@ -120,6 +121,13 @@ T map_value(const T& value, const U& inmin, const V& inmax, const W& outmin, con
 {
 	return outmin + (value - inmin) * (outmax - outmin) / (inmax - inmin);
 }
+
+//float2 rotate_point(float cx, float cy, float angle, float2 p) {
+//
+//	return float2(std::cos(angle) * (p.x - cx) - std::sin(angle) * (p.y - cy) + cx,
+//		std::sin(angle) * (p.x - cx) + std::cos(angle) * (p.y - cy) + cy);
+//}
+
 int random_int(int min, int max);
 float random_between(const float & min, const float & max);
 double random_between(const double & min, const double & max);

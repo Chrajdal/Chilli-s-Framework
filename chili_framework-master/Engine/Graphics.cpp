@@ -284,7 +284,8 @@ void Graphics::EndFrame()
 void Graphics::BeginFrame()
 {
 	// clear the sysbuffer
-	memset(pSysBuffer, Colors::Black.dword, sizeof(Color) * Graphics::ScreenHeight * Graphics::ScreenWidth);
+	std::fill_n(pSysBuffer, Graphics::ScreenHeight * Graphics::ScreenWidth, Colors::Purple);
+
 }
 
 void Graphics::PutPixel(int x, int y, const Color & c)
