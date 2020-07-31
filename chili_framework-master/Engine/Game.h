@@ -46,4 +46,5 @@ private:
 	MainWindow& wnd;
 	Graphics gfx;
 	CTimer timer;
+	Random rnd;
 };

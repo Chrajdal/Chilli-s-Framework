@@ -1,69 +1,119 @@
 #include "Game.h"
 
-constexpr Color rain_color = Colors::MakeRGB(138, 43, 226);
-Random rnd;
-
-
 class Drop
 {
 public:
-	float x;
-	float y;
-	float len;
-	float yspeed;
+public:
+	float2 pos;
+	float radius;
+	float speed;
 
-	float z;
-
-	int thickness;
-	
-	float zmax;
-
-	Drop()
+	Drop(float x, float y)
 	{
-		x = rnd.next(0, Graphics::ScreenWidth);
-		y = rnd.next(-1500, -100);
-		zmax = 10000.0f;
-		z = rnd.next_float(0.0f, zmax);
-
-		len =		map_value(z, 0, zmax, 10, 20);
-		yspeed =	map_value(z, 0, zmax, 24.0f, 30.0f);
-		thickness = map_value(z, 0, zmax, 1, 10);
-
-	}
-
-	void fall() 
-	{
-		y = y + yspeed;
-		float grav = map_value(z, 0, zmax, 1, 2);
-		yspeed = yspeed + grav;
-		if (y > Graphics::ScreenHeight)
-		{
-			*this = Drop();
-		}
+		pos.x = x;
+		pos.y = y;
+		radius = 10;
+		speed = 5.345f;
 	}
 
 	void show(Graphics& gfx)
 	{
-		for (int i = 0; i < thickness; ++i)
-		{
-			gfx.draw_line_s(x + i, y, x + i, y + len, rain_color);
-		}
-		
+		gfx.draw_circle_filled_s(pos.x, pos.y, radius, Colors::Cyan);
+	}
+
+	void move()
+	{
+		this->pos.y -= std::abs(speed);
 	}
 };
 
 
-std::vector<Drop> rain;
+class Flower 
+{
+public:
+	float2 pos;
+	float radius;
+	float2 speed;
+
+	Flower(float x, float y)
+	{
+		pos.x = x;
+		pos.y = y;
+		radius = 20;
+		speed = float2(1, 0);
+	}
+
+	void show(Graphics & gfx)
+	{
+		gfx.draw_circle_filled_s(pos.x, pos.y, radius, Colors::Yellow);
+	}
+
+	void move(void)
+	{
+		pos.x += speed.x;
+		pos.y += speed.y;
+	}
+
+	void shift_down(void)
+	{
+		speed.x *= -1;
+		pos.y += 50;
+	}
+
+	inline bool hits(const Drop& drop) const {
+		return (drop.pos - this->pos).Len() <= (drop.radius + this->radius);
+	}
+};
+
+class Ship
+{
+public:
+	float2 pos;
+	float2 size;
+
+	float speed;
+
+	Ship(void)
+	{
+		pos.x = Graphics::ScreenWidth / 2;
+		pos.y = Graphics::ScreenHeight - 40;
+		size = { 20, 60 };
+		speed = 25.0f;
+	}
+
+	void move(int dir)
+	{
+		this->pos.x += dir * speed;
+	}
+
+	void show(Graphics& gfx)
+	{
+		float2 p1(pos.x - size.x / 2, pos.y - size.y / 2);
+		float2 p2(pos.x + size.x / 2, pos.y - size.y / 2);
+		float2 p3(pos.x - size.x / 2, pos.y + size.y / 2);
+		float2 p4(pos.x + size.x / 2, pos.y + size.y / 2);
+
+		gfx.fill_triangle_s(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, Colors::Magenta);
+		gfx.fill_triangle_s(p4.x, p4.y, p2.x, p2.y, p3.x, p3.y, Colors::Magenta);
+	}
+};
+
+Ship ship;
+std::vector<Flower> flowers;
+std::vector<Drop> drops;
 
 Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
 {
-	//for (int i = 0; i < 5; ++i)
-	//{
-	//	rain.push_back(Drop());
-	//}
+	for (int i = 0; i < 12; ++i)
+	{
+		for (int j = 0; j < 10; ++j)
+		{
+			flowers.push_back(Flower(i * 80 + 80, j * 60 + 60));
+		}
+	}
 }
 
 void Game::Go()
@@ -79,28 +129,96 @@ void Game::Go()
 	gfx.EndFrame();
 }
 
+bool left_pressed = false;
+
 void Game::HandleInput()
 {
-	
+	if (wnd.mouse.IsInWindow())
+	{
+		ship.pos.x = wnd.mouse.GetPosX();
+
+		if (wnd.mouse.LeftIsPressed() && !left_pressed)
+		{
+			drops.push_back(Drop(ship.pos.x, Graphics::ScreenHeight - 50));
+			left_pressed = true;
+		}
+		if (!wnd.mouse.LeftIsPressed())
+		{
+			left_pressed = false;
+		}
+	}
+	//if (wnd.kbd.KeyIsPressed(VK_LEFT))
+	//{
+	//	ship.move(-1);
+	//}
+	//if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+	//{
+	//	ship.move(1);
+	//}
+	//if (wnd.kbd.KeyIsPressed(VK_SPACE))
+	//{
+	//	drops.push_back(Drop(ship.pos.x, Graphics::ScreenHeight - 50));
+	//}
 }
 
 void Game::UpdateModel()
 {
-	for (auto& drop : rain)
+	if (flowers.empty())
 	{
-		drop.fall();
+		for (int i = 0; i < 12; ++i)
+		{
+			for (int j = 0; j < 10; ++j)
+			{
+				flowers.push_back(Flower(i * 80 + 80, j * 60 + 60));
+			}
+		}
 	}
-	if (rain.size() < 50000 /*&& rnd.next() % 5 == 0*/)
-		rain.push_back(Drop());
+
+	bool hit_wall = false;
+	for (Flower & flower : flowers)
+	{
+		flower.move();
+		if (flower.pos.x + flower.radius >= Graphics::ScreenWidth-10)
+		{
+			hit_wall = true;
+		}
+		if (flower.pos.x - flower.radius <= 10)
+		{
+			hit_wall = true;
+		}
+	}
+
+	if (hit_wall == true)
+	{
+		for (Flower & flower : flowers)
+		{
+			flower.shift_down();
+		}
+		hit_wall = false;
+	}
+
+
+
+	for (auto& drop : drops)
+	{
+		drop.move();
+		auto tmp_flower = flowers;
+		std::erase_if(flowers, [drop](Flower& flower) {return flower.hits(drop); });
+		for (auto & flower : tmp_flower)
+		{
+			std::erase_if(drops, [flower](Drop& drop) {return flower.hits(drop); });
+		}
+	}
+	std::erase_if(drops, [](const Drop& drop) {return drop.pos.y < drop.radius; });
+
 	
 }
 
 void Game::ComposeFrame()
 {
-	for (auto& drop : rain)
-	{
+	ship.show(gfx);
+	for (auto& drop : drops)
 		drop.show(gfx);
-	}
-	gfx.draw_line(0, 0, map_value(rain.size(), 0, 50000, 0, Graphics::ScreenWidth), 0, Colors::Magenta);
+	for (auto& flower : flowers)
+		flower.show(gfx);
 }
-

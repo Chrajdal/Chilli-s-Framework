@@ -284,7 +284,7 @@ void Graphics::EndFrame()
 void Graphics::BeginFrame()
 {
 	// clear the sysbuffer
-	std::fill_n(pSysBuffer, Graphics::ScreenHeight * Graphics::ScreenWidth, Colors::Purple);
+	std::fill_n(pSysBuffer, Graphics::ScreenHeight * Graphics::ScreenWidth, Colors::Black);
 
 }
 
@@ -343,7 +343,6 @@ std::wstring Graphics::Exception::GetExceptionType() const
 	return L"Chili Graphics Exception";
 }
 
-// my own functions:
 void Graphics::PutPixel_s(int x, int y, const Color & c)
 {
 	if ((x >= 0) && (x < int(Graphics::ScreenWidth)) &&

@@ -93,7 +93,7 @@ public:
 	}
 
 	// https://www.avrfreaks.net/sites/default/files/triangles.c
-	void FillTriangle_s(int x1, int y1, int x2, int y2, int x3, int y3, const Color & col = 0x000F)
+	void fill_triangle_s(int x1, int y1, int x2, int y2, int x3, int y3, const Color & col)
 	{
 		//auto SWAP = [](int& x, int& y) { int t = x; x = y; y = t; };
 		auto drawline = [&](int sx, int ex, int ny) { for (int i = sx; i <= ex; i++) PutPixel_s(i, ny, col); };

@@ -180,7 +180,6 @@
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Sound.cpp" />
-    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="FramebufferPS.hlsl">
