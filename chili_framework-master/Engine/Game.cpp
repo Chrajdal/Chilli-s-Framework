@@ -1,78 +1,74 @@
 #include "Game.h"
 
-class Cell
+class Planet
 {
 public:
-	float2 pos;
-	float r;
-
+	float distance;
+	float radius;
+	float angle;
+	float angle_vel;
 	Color col;
-	Random rnd;
-	Cell()
-		: pos(random2D()), r(80), col(Colors::randomColor())
-	{
-		pos.x = std::abs(pos.x) * Graphics::ScreenWidth;
-		pos.y = std::abs(pos.y) * Graphics::ScreenHeight;
-	}
+	std::vector<Planet> planets;
 
-	Cell(float2 pos, float r, Color col)
+	Planet(float d = 0,  float r = 0, float angle = 0, const Color & col = Colors::randomColor())
 		:
-		pos(pos), r(r), col(col)
+		distance(d), radius(r), angle(angle), col(col), planets({})
 	{
-	}
-
-	bool clicked(int x, int y) const
-	{
-		float dist = std::sqrtf((x - pos.x) * (x - pos.x) + (y - pos.y) * (y - pos.y));
-		return dist <= r;
-	}
-
-	Cell mitosis()
-	{
-		Color newColor;
-		newColor.SetR(col.GetR() + rnd.next(-5, 5));
-		newColor.SetG(col.GetG() + rnd.next(-5, 5));
-		newColor.SetB(col.GetB() + rnd.next(-5, 5));
-		col = newColor;
-		newColor.SetR(col.GetR() + rnd.next(-5, 5));
-		newColor.SetG(col.GetG() + rnd.next(-5, 5));
-		newColor.SetB(col.GetB() + rnd.next(-5, 5));
-
-		float half_area = std::numbers::pi * r * r / 2.0f;
-		float newr = std::sqrtf((half_area) / std::numbers::pi);
-		r = newr;
-		return Cell (pos, r, newColor);
+		angle_vel = rnd.next_float(-0.5, 0.5) / radius;
 	}
 
 	void move(void)
 	{
-		float2 vel = random2D();
-		pos += vel;
-
-		if (pos.x < 0 || pos.x > Graphics::ScreenWidth)
-			pos.x *= -1;
-		if (pos.y < 0 || pos.y > Graphics::ScreenHeight)
-			pos.y *= -1;
+		angle += angle_vel;
+		for (auto& planet : planets)
+			planet.move();
 	}
 
-	void show(Graphics& gfx)
+	void spawnMoons(int total, int level)
 	{
-		gfx.draw_circle_filled_s(pos.x, pos.y, r, col);
+		for (int i = 0; i < total; ++i)
+		{
+			float r = rnd.next_float(0.7, 0.9) * radius / level;
+			float d = rnd.next_float(4, 8) * (radius + r) / level;
+			float a = rnd.next_float(0, std::numbers::pi * 2);
+			planets.push_back(Planet(d, r, a));
+		}
+		if (level < 4)
+		{
+			for (auto& pl : planets)
+			{
+				pl.spawnMoons(rnd.next(0, 3), level + 1);
+			}
+		}
 	}
+
+	void show(Graphics& gfx, float2 translation)
+	{
+		float2 next_translation = rotate_point(
+			translation.x,
+			translation.y,
+			angle,
+			translation + float2(distance,0));
+
+		gfx.draw_circle_filled_s(next_translation.x, next_translation.y, radius * 2, col);
+
+		for (auto& planet : planets)
+		{
+			planet.show(gfx, next_translation);
+		}
+	}
+
+
 };
 
-std::list<Cell> cells;
+Planet planet (0, 25, 0, Colors::Yellow);
 
 Game::Game(MainWindow & wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
 {
-	for (int i = 0; i < 5; ++i)
-	{
-		cells.push_back({});
-	}
-	
+	planet.spawnMoons(5, 1);
 }
 
 void Game::Go()
@@ -97,39 +93,21 @@ void Game::HandleInput()
 		if (wnd.mouse.LeftIsPressed() && !left_pressed)
 		{
 			left_pressed = true;
-			int l = cells.size();
 			
-			for (auto& cell : cells)
-			{
-				if (cell.clicked(wnd.mouse.GetPosX(), wnd.mouse.GetPosY()))
-				{
-					if (cell.r > 2)
-					{
-						cells.push_back(cell.mitosis());
-					}
-				}
-			}
 		}
 		if (!wnd.mouse.LeftIsPressed())
 			left_pressed = false;
 	}
 
 
-
 }
 
 void Game::UpdateModel()
 {
-	
-
-	
+	planet.move();	
 }
 
 void Game::ComposeFrame()
-{
-	for (auto& cell : cells)
-	{
-		cell.move();
-		cell.show(gfx);
-	}
+{	
+	planet.show(gfx, { Graphics::ScreenWidth / 2, Graphics::ScreenHeight / 2 });
 }

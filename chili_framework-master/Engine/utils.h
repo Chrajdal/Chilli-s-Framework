@@ -121,6 +121,19 @@ inline auto map_value(const T& value, const U& inmin, const V& inmax, const W& o
 	return outmin + (value - inmin) * (outmax - outmin) / (inmax - inmin);
 }
 
+
+/**
+ *   \brief Rotates point
+ *
+ *   Rotates point p arount point (cx, cy) by angle
+ *
+ *   \param cx center point X
+ *   \param cy center point Y
+ *   \param angle angle
+ *   \param p point to rotate
+ *   \return rotated point 
+ *
+ **/
 inline float2 rotate_point(float cx, float cy, float angle, float2 p)
 {
 	return float2(std::cos(angle) * (p.x - cx) - std::sin(angle) * (p.y - cy) + cx,
