@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "Random.h"
 #include <cmath>
+#include <numbers>
 
 class Game
 {
@@ -46,5 +47,4 @@ private:
 	MainWindow& wnd;
 	Graphics gfx;
 	CTimer timer;
-	Random rnd;
 };

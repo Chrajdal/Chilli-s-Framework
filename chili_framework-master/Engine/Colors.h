@@ -93,8 +93,7 @@ namespace Colors
 	
 	static Color randomColor()
 	{
-		Random r;
-		return (r.next() << 16) | (r.next() << 8) | r.next();
+		return (rnd.next() << 16) | (rnd.next() << 8) | rnd.next();
 
 	}
 	static constexpr Color MakeRGB(unsigned char r, unsigned char g, unsigned char b)

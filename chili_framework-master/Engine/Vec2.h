@@ -20,10 +20,10 @@
 ******************************************************************************************/
 #pragma once
 #include <algorithm>
-#include <math.h>
-
-constexpr float PI = 3.14159265f;
-constexpr double PI_D = 3.1415926535897932;
+#include <cmath>
+#include <numeric>
+#include <numbers>
+#include "Random.h"
 
 template <typename T>
 inline auto sq(const T& x)
@@ -155,3 +155,8 @@ public:
 typedef Cvector2<float> float2;
 typedef Cvector2<double> double2;
 typedef Cvector2<int> int2;
+
+inline float2 random2D(void)
+{
+	return { rnd.next_float(-1, 1),rnd.next_float(-1, 1) };
+}

@@ -120,3 +120,12 @@ public:
 public:
 	T z;
 };
+
+typedef Cvector3<float> float3;
+typedef Cvector3<double> double3;
+typedef Cvector3<int> int3;
+
+inline float3 random3D(void)
+{
+	return { rnd.next_float(-1, 1),rnd.next_float(-1, 1),rnd.next_float(-1, 1) };
+}

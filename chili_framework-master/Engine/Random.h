@@ -14,3 +14,5 @@ public:
 	float_t next_float(float_t minval = std::numeric_limits<float_t>::min(), float_t maxval = std::numeric_limits<float_t>::max());
 	double_t next_double(double_t minval = std::numeric_limits<double_t>::min(), double_t maxval = std::numeric_limits<double_t>::max());
 };
+
+static Random rnd;

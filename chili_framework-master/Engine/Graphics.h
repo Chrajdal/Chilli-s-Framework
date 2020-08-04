@@ -230,4 +230,34 @@ public:
 		}
 	}
 
+	void draw_elipse_s(float2 origin, int width, int height, const Color & col)
+	{
+		int hh = height * height;
+		int ww = width * width;
+		int hhww = hh * ww;
+		int x0 = width;
+		int dx = 0;
+
+		// do the horizontal diameter
+		for (int x = -width; x <= width; x++)
+			PutPixel_s(origin.x + x, origin.y, col);
+
+		// now do both halves at the same time, away from the diameter
+		for (int y = 1; y <= height; y++)
+		{
+			int x1 = x0 - (dx - 1);  // try slopes of dx - 1 or more
+			for (; x1 > 0; x1--)
+				if (x1 * x1 * hh + y * y * ww <= hhww)
+					break;
+			dx = x0 - x1;  // current approximation of the slope
+			x0 = x1;
+
+			for (int x = -x0; x <= x0; x++)
+			{
+				PutPixel_s(origin.x + x, origin.y - y, col);
+				PutPixel_s(origin.x + x, origin.y + y, col);
+			}
+		}
+	}
+
 };
