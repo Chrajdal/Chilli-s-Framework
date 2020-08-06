@@ -30,6 +30,7 @@
 #include "Random.h"
 #include <cmath>
 #include <numbers>
+#include <array>
 
 class Game
 {

@@ -259,5 +259,28 @@ public:
 			}
 		}
 	}
+	
+	void draw_rect_filled(int x, int y, int w, int h, const Color & col)
+	{
+		for (int i = y; i < y + h; ++i)
+		{
+			std::fill_n(pSysBuffer + i * Graphics::ScreenWidth + x, w, col);
+		}		
+	}
+	void draw_rect(int x, int y, int w, int h, const Color& col)
+	{
+		draw_line(x    , y    , x + w, y    , col);		// ---
+		draw_line(x    , y    , x    , y + h, col);		// |
+		draw_line(x + w, y    , x + w, y + h, col);     //   |
+		draw_line(x    , y + h, x + w, y + h, col);     // ___ 
+	}
+
+	void draw_rect_s(int x, int y, int w, int h, const Color& col)
+	{
+		draw_line_s(x, y, x + w, y, col);				// ---
+		draw_line_s(x, y, x, y + h, col);				// |
+		draw_line_s(x + w, y, x + w, y + h, col);		//   |
+		draw_line_s(x, y + h, x + w, y + h, col);		// ___ 
+	}
 
 };
