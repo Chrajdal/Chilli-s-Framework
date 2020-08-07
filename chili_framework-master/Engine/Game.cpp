@@ -1,56 +1,36 @@
 #include "Game.h"
 
-std::vector< std::vector<double2>> grid;
-std::vector< std::vector<double2>> next;
+float2 center(Graphics::ScreenWidth / 2, Graphics::ScreenHeight / 2);
 
-double dA = 1.0f;
-double dB = 0.5f;
-double feed = 0.055f;
-double k = 0.062f;
+float angle = std::numbers::pi / 4.0;
+float start_len = 100;
+
+void branch(Graphics& gfx, float2 start, float2 end)
+{
+	float len = (end - start).Len();
+	//println(len);
+	if (len < 1)
+		return;
+	
+	gfx.draw_line_s(start.x, start.y, end.x, end.y, Colors::White);
+
+	float2 s = end;
+	float2 tmp = (end - start) * 0.666666 + end;
+
+	auto e1 = rotate_point(s.x, s.y, angle, tmp);
+	auto e2 = rotate_point(s.x, s.y, -angle, tmp);
+	branch(gfx, s, e1);
+	branch(gfx, s, e2);
+
+
+}
 
 Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
 {	
-	for (int x = 0; x < Graphics::ScreenWidth; ++x)
-	{
-		std::vector<double2> tmp1;
-		std::vector<double2> tmp2;
-		for (int y = 0; y < Graphics::ScreenHeight; ++y)
-		{
-			tmp1.push_back({ 0.0f, 1.0f });
-			tmp2.push_back({ 0.0f, 1.0f });
-		}
-		grid.push_back(tmp1);
-		next.push_back(tmp2);
-	}
-	
-	for (int n = 0; n < 10; n++) {
-		int startx = int(rnd.next_double(20, Graphics::ScreenWidth - 20));
-		int starty = int(rnd.next_double(20, Graphics::ScreenHeight- 20));
-	
-		for (int i = startx; i < startx + 10; i++) {
-			for (int j = starty; j < starty + 10; j++) {
-				double a = 1;
-				double b = 0;
-				grid[i][j] = double2(a, b);
-				next[i][j] = double2(a, b);
-			}
-		}
-	}
-	//int startx = Graphics::ScreenWidth / 2;
-	//int starty = Graphics::ScreenHeight / 2;
-	//for (int x = startx; x < startx + 10; ++x)
-	//{
-	//	for (int y = starty; y < starty + 10; ++y)
-	//	{
-	//		grid[x][y].x = 1;
-	//		next[x][y].x = 1;
-	//		grid[x][y].y = 1;
-	//		next[x][y].y = 1;
-	//	}
-	//}
+
 }
 
 void Game::Go()
@@ -70,7 +50,6 @@ void Game::Go()
 }
 
 bool left_pressed = false;
-
 void Game::HandleInput()
 {
 	if (wnd.mouse.IsInWindow())
@@ -82,6 +61,24 @@ void Game::HandleInput()
 		if (!wnd.mouse.LeftIsPressed())
 			left_pressed = false;
 	}
+
+	if (wnd.kbd.KeyIsPressed(VK_UP))
+	{
+		angle += 0.005;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_DOWN))
+	{
+		angle -= 0.005;
+	}
+
+	if (wnd.kbd.KeyIsPressed(VK_LEFT))
+	{
+		start_len -= 1;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+	{
+		start_len += 1;
+	}
 }
 
 void Game::UpdateModel()
@@ -89,56 +86,9 @@ void Game::UpdateModel()
 	
 }
 
-auto laplaceA = [](int x, int y)
-{
-	double sum = 0;
-	sum += next[x][y].x * -1;
-	sum += next[x - 1][y].x * 0.2;
-	sum += next[x + 1][y].x * 0.2;
-	sum += next[x][y - 1].x * 0.2;
-	sum += next[x][y + 1].x * 0.2;
-	sum += next[x + 1][y + 1].x * 0.05;
-	sum += next[x - 1][y - 1].x * 0.05;
-	sum += next[x - 1][y + 1].x * 0.05;
-	sum += next[x + 1][y - 1].x * 0.05;
-	return sum;
-};
-auto laplaceB = [](int x, int y)
-{
-	double sum = 0;
-	sum += next[x][y].y * -1;
-	sum += next[x - 1][y].y * 0.2;
-	sum += next[x + 1][y].y * 0.2;
-	sum += next[x][y - 1].y * 0.2;
-	sum += next[x][y + 1].y * 0.2;
-	sum += next[x + 1][y + 1].y * 0.05;
-	sum += next[x - 1][y - 1].y * 0.05;
-	sum += next[x - 1][y + 1].y * 0.05;
-	sum += next[x + 1][y - 1].y * 0.05;
-	return sum;
-};
-
 void Game::ComposeFrame()
 {
-	for (int x = 1; x < Graphics::ScreenWidth-1; ++x)
-	{
-		for (int y = 1; y < Graphics::ScreenHeight-1; ++y)
-		{
-			double a = grid[x][y].x;
-			double b = grid[x][y].y;
-			
-			next[x][y].x = a + (dA * laplaceA(x, y) - a * b * b + feed * (1 - a)) * 0.4;
-			next[x][y].y = b + (dB * laplaceB(x, y) + a * b * b - (k + feed) * b) * 0.4;
 
-
-			next[x][y].x = constrain_value(next[x][y].x, 0.0, 1.0);
-			next[x][y].y = constrain_value(next[x][y].y, 0.0, 1.0);
-
-			double rgb = constrain_value(std::abs(next[x][y].x - next[x][y].y) * 255, 0.0, 255.0);
-			Color c = Colors::MakeRGB(rgb, rgb, rgb);
-			gfx.PutPixel(x, y, c);
-		}
-	}
-
-	std::swap(grid, next);
+	branch(gfx, float2(center.x, Graphics::ScreenHeight - 10), float2(center.x, Graphics::ScreenHeight - start_len -10));
 }
+

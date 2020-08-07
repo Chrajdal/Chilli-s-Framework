@@ -59,8 +59,8 @@ private:
 	D3D11_MAPPED_SUBRESOURCE							mappedSysBufferTexture;
 	Color*                                              pSysBuffer = nullptr;
 public:
-	static constexpr int ScreenWidth  = 256;
-	static constexpr int ScreenHeight = 256;
+	static constexpr int ScreenWidth  = 1024;
+	static constexpr int ScreenHeight = 1024;
 	
 	// safer but slower render functions
 	void PutPixel_s(int x, int y, const Color & c);

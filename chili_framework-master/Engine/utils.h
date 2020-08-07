@@ -130,11 +130,11 @@ inline auto constrain_value(const T& x, const  T& a, const T& b)
 /**
  *   \brief Rotates point
  *
- *   Rotates point p arount point (cx, cy) by angle
+ *   Rotates point p arount point (cx, cy) by angle (RAD)
  *
  *   \param cx center point X
  *   \param cy center point Y
- *   \param angle angle
+ *   \param angle angle in radians
  *   \param p point to rotate
  *   \return rotated point 
  *
