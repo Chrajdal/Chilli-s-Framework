@@ -1,57 +1,61 @@
 #include "Game.h"
 
-template <typename T>
-void println(T t)
-{
-	std::cout << t << "\n";
-}
+std::vector< std::vector<double2>> grid;
+std::vector< std::vector<double2>> next;
 
-template <typename T, typename ...U>
-void println(T t, U ...u)
-{
-	std::cout << t << " ";
-	println(u...);
-}
-
-
-
-long double x = 0.1l;
-long double y = 0.0l;
-long double z = 0.0l;
-
-const long double a = 10.0l;
-const long double b = 28.0l;
-const long double c = 8.0l/3.0;
-
-int2 center(Graphics::ScreenWidth/2, y + Graphics::ScreenHeight/2);
-float2 scale(15, 15);
-
-bool is_in_win(int x, int y)
-{
-	return	x >= 0 && x < Graphics::ScreenWidth&&
-		y >= 0 && y < Graphics::ScreenHeight;
-}
-
-auto hash = [](const int3 & pt) {
-	return (size_t)(pt.x * 100 + pt.y);
-};
-
-auto equal = [](const int3& pt1, const int3& pt2) {
-	return ((pt1.x == pt2.x) && (pt1.y == pt2.y));
-};
-using PointHash = std::unordered_set<int3, decltype(hash), decltype(equal)>;
-
-PointHash points;
+double dA = 1.0f;
+double dB = 0.5f;
+double feed = 0.055f;
+double k = 0.062f;
 
 Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
-{
+{	
+	for (int x = 0; x < Graphics::ScreenWidth; ++x)
+	{
+		std::vector<double2> tmp1;
+		std::vector<double2> tmp2;
+		for (int y = 0; y < Graphics::ScreenHeight; ++y)
+		{
+			tmp1.push_back({ 0.0f, 1.0f });
+			tmp2.push_back({ 0.0f, 1.0f });
+		}
+		grid.push_back(tmp1);
+		next.push_back(tmp2);
+	}
+	
+	for (int n = 0; n < 10; n++) {
+		int startx = int(rnd.next_double(20, Graphics::ScreenWidth - 20));
+		int starty = int(rnd.next_double(20, Graphics::ScreenHeight- 20));
+	
+		for (int i = startx; i < startx + 10; i++) {
+			for (int j = starty; j < starty + 10; j++) {
+				double a = 1;
+				double b = 0;
+				grid[i][j] = double2(a, b);
+				next[i][j] = double2(a, b);
+			}
+		}
+	}
+	//int startx = Graphics::ScreenWidth / 2;
+	//int starty = Graphics::ScreenHeight / 2;
+	//for (int x = startx; x < startx + 10; ++x)
+	//{
+	//	for (int y = starty; y < starty + 10; ++y)
+	//	{
+	//		grid[x][y].x = 1;
+	//		next[x][y].x = 1;
+	//		grid[x][y].y = 1;
+	//		next[x][y].y = 1;
+	//	}
+	//}
 }
 
 void Game::Go()
 {
+	timer.restart();
 	if (wnd.kbd.KeyIsPressed(VK_ESCAPE))
 		wnd.Kill();
 	gfx.BeginFrame();
@@ -61,6 +65,8 @@ void Game::Go()
 	ComposeFrame();
 
 	gfx.EndFrame();
+
+	println(int(1000.0/timer.elapsed()));
 }
 
 bool left_pressed = false;
@@ -80,31 +86,59 @@ void Game::HandleInput()
 
 void Game::UpdateModel()
 {
-	for (int i = 0; i < 10; ++i)
-	{
-		const long double dt = 0.01l;
-
-		long double dx = a * (y - x);
-		long double dy = x * (b - z) - y;
-		long double dz = x * y - c * z;
-		x += dx * dt;
-		y += dy * dt;
-		z += dz * dt;
-
-		println(points.size(), "                ", (int)x, (int)y, (int)z);
 	
-		int3 finalp (x * scale.x, y * scale.y, z);
-		finalp += int3(center.x, center.y, 0);
-
-		if(is_in_win(finalp.x, finalp.y) && points.size() < 50000)
-			points.insert(finalp);
-	}
 }
+
+auto laplaceA = [](int x, int y)
+{
+	double sum = 0;
+	sum += next[x][y].x * -1;
+	sum += next[x - 1][y].x * 0.2;
+	sum += next[x + 1][y].x * 0.2;
+	sum += next[x][y - 1].x * 0.2;
+	sum += next[x][y + 1].x * 0.2;
+	sum += next[x + 1][y + 1].x * 0.05;
+	sum += next[x - 1][y - 1].x * 0.05;
+	sum += next[x - 1][y + 1].x * 0.05;
+	sum += next[x + 1][y - 1].x * 0.05;
+	return sum;
+};
+auto laplaceB = [](int x, int y)
+{
+	double sum = 0;
+	sum += next[x][y].y * -1;
+	sum += next[x - 1][y].y * 0.2;
+	sum += next[x + 1][y].y * 0.2;
+	sum += next[x][y - 1].y * 0.2;
+	sum += next[x][y + 1].y * 0.2;
+	sum += next[x + 1][y + 1].y * 0.05;
+	sum += next[x - 1][y - 1].y * 0.05;
+	sum += next[x - 1][y + 1].y * 0.05;
+	sum += next[x + 1][y - 1].y * 0.05;
+	return sum;
+};
 
 void Game::ComposeFrame()
 {
-	for (const auto& p : points)
+	for (int x = 1; x < Graphics::ScreenWidth-1; ++x)
 	{
-		gfx.PutPixel_s(p.x, p.y, Colors::White);
+		for (int y = 1; y < Graphics::ScreenHeight-1; ++y)
+		{
+			double a = grid[x][y].x;
+			double b = grid[x][y].y;
+			
+			next[x][y].x = a + (dA * laplaceA(x, y) - a * b * b + feed * (1 - a)) * 0.4;
+			next[x][y].y = b + (dB * laplaceB(x, y) + a * b * b - (k + feed) * b) * 0.4;
+
+
+			next[x][y].x = constrain_value(next[x][y].x, 0.0, 1.0);
+			next[x][y].y = constrain_value(next[x][y].y, 0.0, 1.0);
+
+			double rgb = constrain_value(std::abs(next[x][y].x - next[x][y].y) * 255, 0.0, 255.0);
+			Color c = Colors::MakeRGB(rgb, rgb, rgb);
+			gfx.PutPixel(x, y, c);
+		}
 	}
+
+	std::swap(grid, next);
 }

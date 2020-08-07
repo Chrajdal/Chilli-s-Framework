@@ -121,6 +121,11 @@ inline auto map_value(const T& value, const U& inmin, const V& inmax, const W& o
 	return outmin + (value - inmin) * (outmax - outmin) / (inmax - inmin);
 }
 
+template <typename T>
+inline auto constrain_value(const T& x, const  T& a, const T& b)
+{
+	return std::min(std::max(x, a), b);
+}
 
 /**
  *   \brief Rotates point
@@ -341,4 +346,19 @@ namespace perlin {
 		));
 	}
 };
+//-----------------------------------------------------------------------------
+
+template <typename T>
+inline void println(T t)
+{
+	std::cout << t << "\n";
+}
+
+template <typename T, typename ...U>
+inline void println(T t, U ...u)
+{
+	std::cout << t << " ";
+	println(u...);
+}
+
 //-----------------------------------------------------------------------------
