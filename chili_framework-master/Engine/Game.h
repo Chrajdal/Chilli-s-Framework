@@ -31,6 +31,7 @@
 #include <cmath>
 #include <numbers>
 #include <array>
+#include <unordered_set>
 
 class Game
 {

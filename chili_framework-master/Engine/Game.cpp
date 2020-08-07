@@ -1,172 +1,53 @@
 #include "Game.h"
 
-const int w = 16;
-
-const int cols = Graphics::ScreenWidth / w;
-const int rows = Graphics::ScreenHeight / w;
-
-int visited_cells = 0;
-
-int index(int i, int j)
+template <typename T>
+void println(T t)
 {
-	return i + j * cols;
+	std::cout << t << "\n";
 }
 
-class Cell
+template <typename T, typename ...U>
+void println(T t, U ...u)
 {
-public:
-	int i;
-	int j;
-
-	bool visited;
-
-	enum wall
-	{
-		top = 0, right = 1, bottom = 2, left = 3
-	};
-
-	bool open[4] = { true, true, true, true };
-
-	Cell(int _i = 0, int _j = 0)
-		: i(_i), j(_j), visited(false)
-	{
-	}
-
-	~Cell() {}
-
-	void show(Graphics& gfx)
-	{
-		int x = i * w;
-		int y = j * w;
-		int h = w;
-		auto col = Colors::LightGray;
-		if (visited)
-		{
-			//gfx.draw_rect_filled(x + 1, y + 1, w - 1, h - 1, Colors::Magenta);
-			gfx.draw_rect_filled(x, y, w, h, Colors::Magenta);
-		}
-
-		if (open[wall::top])
-			gfx.draw_line_s(x    , y    , x + w, y    , col);	// ---
-		if (open[wall::right])
-			gfx.draw_line_s(x    , y    , x    , y + h, col);	// |
-		if (open[wall::left])
-			gfx.draw_line_s(x + w, y    , x + w, y + h, col);	//   |
-		if (open[wall::bottom])
-			gfx.draw_line_s(x    , y + h, x + w, y + h, col);	// ___ 
-	}
-
-	auto checkNeigbors(std::array<Cell, rows * cols> & grid)
-	{
-		std::vector<Cell* > neigbors(4);
-		
-		if (j > 0)
-			neigbors[wall::top] = &grid[index(i, j - 1)];
-		if (i < rows - 1)
-			neigbors[wall::right] = &grid[index(i + 1, j)];
-		if (j < cols - 1)
-			neigbors[wall::bottom] = &grid[index(i, j + 1)];
-		if (i > 0)
-			neigbors[wall::left] = &grid[index(i - 1, j)];
-		
-		std::vector<Cell* > res;
-		for (auto& c : neigbors)
-			if (c != nullptr)
-				if (c->visited == false)
-					res.push_back(c);
-		
-		if (res.size() > 1)
-			return res[rnd.next(0, res.size() - 1)];
-		else if (res.size() == 1)
-			return res[0];
-		else
-			throw "not found anything";
-	}
+	std::cout << t << " ";
+	println(u...);
+}
 
 
+
+long double x = 0.1l;
+long double y = 0.0l;
+long double z = 0.0l;
+
+const long double a = 10.0l;
+const long double b = 28.0l;
+const long double c = 8.0l/3.0;
+
+int2 center(Graphics::ScreenWidth/2, y + Graphics::ScreenHeight/2);
+float2 scale(15, 15);
+
+bool is_in_win(int x, int y)
+{
+	return	x >= 0 && x < Graphics::ScreenWidth&&
+		y >= 0 && y < Graphics::ScreenHeight;
+}
+
+auto hash = [](const int3 & pt) {
+	return (size_t)(pt.x * 100 + pt.y);
 };
 
-std::array<Cell, rows*cols> grid;
-Cell* current = &grid[0];
-std::list<Cell*> stack;
-void remove_wall(Cell* a, Cell* b)
-{
-	auto x = a->i - b->i;
-	if (x == 1)
-	{
-		a->open[Cell::wall::right] = false;
-		b->open[Cell::wall::left] = false;
-	}
-	else if (x == -1)
-	{
-		a->open[Cell::wall::left] = false;
-		b->open[Cell::wall::right] = false;
-	}
-	else // x == 0
-	{
-		x = a->j - b->j;
-		if (x == 1)
-		{
-			a->open[Cell::wall::top] = false;
-			b->open[Cell::wall::bottom] = false;
-		}
-		else if (x == -1)
-		{
-			a->open[Cell::wall::bottom] = false;;
-			b->open[Cell::wall::top] = false; 
-		}
-	}
-}
+auto equal = [](const int3& pt1, const int3& pt2) {
+	return ((pt1.x == pt2.x) && (pt1.y == pt2.y));
+};
+using PointHash = std::unordered_set<int3, decltype(hash), decltype(equal)>;
 
-inline bool unvisited()
-{
-	return std::find_if(grid.begin(), grid.end(), [](const Cell& c) {return c.visited == false; }) != grid.end();
-}
+PointHash points;
 
 Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
 {
-	for (int j = 0; j < cols; j++)
-	{
-		for (int i = 0; i < rows; i++)
-		{
-			grid[index(i, j)] = Cell(i, j);
-		}
-	}
-
-	while (unvisited())
-	{
-		current->visited = true;
-		try
-		{
-			// STEP 1
-			Cell* next = current->checkNeigbors(grid);
-			if (next->visited == false)
-				++visited_cells;
-			next->visited = true;
-			
-
-			// STEP 2
-			stack.push_back(current);
-
-			// STEP 3
-			remove_wall(current, next);
-
-			// STEP 4
-			current = next;
-		}
-		catch (...)
-		{
-			//gfx.draw_circle_filled(500, 500, 200, Colors::Red);
-			if (!stack.empty())
-			{
-				current = *stack.rbegin();
-				stack.pop_back();
-			}
-		}
-	}
 }
 
 void Game::Go()
@@ -195,23 +76,35 @@ void Game::HandleInput()
 		if (!wnd.mouse.LeftIsPressed())
 			left_pressed = false;
 	}
-
-
 }
 
 void Game::UpdateModel()
 {
+	for (int i = 0; i < 10; ++i)
+	{
+		const long double dt = 0.01l;
 
-} 
+		long double dx = a * (y - x);
+		long double dy = x * (b - z) - y;
+		long double dz = x * y - c * z;
+		x += dx * dt;
+		y += dy * dt;
+		z += dz * dt;
+
+		println(points.size(), "                ", (int)x, (int)y, (int)z);
+	
+		int3 finalp (x * scale.x, y * scale.y, z);
+		finalp += int3(center.x, center.y, 0);
+
+		if(is_in_win(finalp.x, finalp.y) && points.size() < 50000)
+			points.insert(finalp);
+	}
+}
 
 void Game::ComposeFrame()
 {
-	for (auto& cell : grid)
+	for (const auto& p : points)
 	{
-		cell.show(gfx);
+		gfx.PutPixel_s(p.x, p.y, Colors::White);
 	}
-	int x = current->i * w;
-	int y = current->j * w;
-	int h = w;
-	gfx.draw_rect_filled(x, y, w, h, Colors::Cyan);
 }
