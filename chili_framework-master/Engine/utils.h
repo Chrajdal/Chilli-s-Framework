@@ -139,7 +139,7 @@ inline auto constrain_value(const T& x, const  T& a, const T& b)
  *   \return rotated point 
  *
  **/
-inline float2 rotate_point(float cx, float cy, float angle, float2 p)
+inline float2 rotate_point(const float cx, const float cy, const float angle, float2 p)
 {
 	return float2(std::cos(angle) * (p.x - cx) - std::sin(angle) * (p.y - cy) + cx,
 		std::sin(angle) * (p.x - cx) + std::cos(angle) * (p.y - cy) + cy);

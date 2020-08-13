@@ -350,6 +350,11 @@ void Graphics::PutPixel_s(int x, int y, const Color & c)
 		pSysBuffer[Graphics::ScreenWidth * y + x] = c;
 }
 
+void Graphics::draw_line_s(float2 s, float2 e, const Color& c)
+{
+	draw_line_s(s.x, s.y, e.x, e.y, c);
+}
+
 void Graphics::draw_line_s(int x1, int y1, int x2, int y2, const Color & c)
 {
 	int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;

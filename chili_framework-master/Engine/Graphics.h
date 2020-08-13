@@ -65,6 +65,7 @@ public:
 	// safer but slower render functions
 	void PutPixel_s(int x, int y, const Color & c);
 
+	void draw_line_s(float2 s, float2 e, const Color& c);
 	void draw_line_s(int x1, int y1, int x2, int y2, const Color & c);
 	void draw_circle_s(int _x, int _y, int radius, const Color & c);
 
