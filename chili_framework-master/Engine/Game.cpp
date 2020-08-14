@@ -1,71 +1,108 @@
-#include "Game.h"
+﻿#include "Game.h"
 
 float2 center(Graphics::ScreenWidth / 2, Graphics::ScreenHeight / 2);
 
-float angle = std::numbers::pi / 6.0;
-float start_len = 100;
+float angle = 90 * (std::numbers::pi / 180);
+float start_len = 500;
+float2 START(center.x, center.y);
 
-class Branch
+struct Rule
 {
-public:
-	std::shared_ptr<float2> S;
-	float2 E;
-
-	bool finished = false;
-
-	Branch(const std::shared_ptr<float2> & start, float2 end = {})
-		: S(start)
-	{
-		E = end;
-	}
-
-	void show(Graphics& gfx)
-	{
-		float len = (E - *S).Len();
-		if (len > 1 || len < 1e4)
-			gfx.draw_line_s(*S, E, Colors::White);
-	}
-
-	void jitter(void)
-	{
-		E += random2D();
-	}
-
-	void branch(std::vector<Branch> & tree)
-	{
-		if (finished == false)
-		{
-			finished = true;
-			float len = (E - *S).Len();
-			if (len < 1)
-				return;
-
-			float2 tmp = (E - *S) * 0.666666 + E;
-
-			float2 e1 = rotate_point(E.x, E.y, angle, tmp);
-			float2 e2 = rotate_point(E.x, E.y, -angle*1.5, tmp);
-
-			Branch right(std::make_shared<float2>(E), e1);
-			Branch left(std::make_shared<float2>(E), e2);
-
-			tree.push_back(right);
-			tree.push_back(left);
-		}
-	}
+	std::string a;
+	std::string b;
 };
 
-std::vector<Branch> tree;
-std::vector<float2> leaves;
-float2 START(center.x, Graphics::ScreenHeight - 10);
+std::string axiom = "FX";
+std::string sentence = axiom;
+std::vector<Rule> rules;
+
+void generate(void)
+{
+	start_len *= 0.5;
+	std::string next = "";
+	for (auto & c : sentence)
+	{
+		bool matchedrule = false;
+		for (auto & rule : rules)
+		{
+			std::string x(1,c);
+			if (rule.a == x)
+			{
+				next += rule.b;
+				matchedrule = true;
+				break;
+			}
+		}
+		if (!matchedrule)
+		{
+			next += std::string(1, c);
+		}
+	}
+	sentence = next;
+}
+
+class Translation
+{
+public:
+	Translation()
+	{}
+	float2 translation;
+	float2 direction;
+};
+
+Translation current;
+std::list<Translation> stack;
+
+void turtle(Graphics & gfx)
+{
+	current.translation = START;
+	current.direction = float2(1, 0);
+
+	stack.push_back(current);
+
+	for (auto & c : sentence)
+	{
+		float2 from = stack.rbegin()->translation;
+		float2 to = from + stack.rbegin()->direction * start_len;
+		float2 rotated_dirR = rotate_point(0, 0, angle, stack.rbegin()->direction);
+		float2 rotated_dirL = rotate_point(0, 0, -angle, stack.rbegin()->direction);
+		auto to_be_saved = *stack.rbegin();
+		
+		switch (c)
+		{
+		case 'X': // draw forward
+			gfx.draw_line_s(from.x, from.y, to.x, to.y, Colors::LightGray);
+			stack.rbegin()->translation = to;
+			break;
+		case 'Y': // draw forward
+			gfx.draw_line_s(from.x, from.y, to.x, to.y, Colors::LightGray);
+			stack.rbegin()->translation = to;
+			break;
+		case '+': // rotate right
+			rotated_dirR.Normalize();
+			stack.rbegin()->direction = rotated_dirR;
+			break;
+		case '-': // rotate left
+			rotated_dirL.Normalize();
+			stack.rbegin()->direction = rotated_dirL;
+			break;
+		case '[': // push translation and angle
+			stack.push_back(to_be_saved);
+			break;
+		case ']': // pop translation and angle
+			stack.pop_back();
+			break;
+		}
+	}
+}
 
 Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd)
 {
-	Branch root(std::make_shared<float2>(START), float2(center.x, Graphics::ScreenHeight - start_len - 10));
-
-	tree.push_back(root);
+	rules.push_back({ "X", "X+YF+" });
+	rules.push_back({ "Y", "-FX-Y" });
 }
 
 void Game::Go()
@@ -81,7 +118,7 @@ void Game::Go()
 
 	gfx.EndFrame();
 
-	println(int(1000.0/timer.elapsed()));
+	//println(int(1000.0/timer.elapsed()));
 }
 
 bool left_pressed = false;
@@ -99,24 +136,8 @@ void Game::HandleInput()
 		if (wnd.mouse.LeftIsPressed() && !left_pressed)
 		{
 			left_pressed = true;
-
-			for (int i = tree.size() - 1; i >= 0; --i)
-			{
-				tree[i].branch(tree);
-			}
-
-			count++;
-			if (count == 5)
-			{
-				for (int i = tree.size()-1; i >= 0; --i)
-				{
-					if (!tree[i].finished)
-					{
-						leaves.push_back(tree[i].E);
-					}					
-				}
-				count = 0;
-			}
+			generate();
+			println(sentence);
 
 		}
 		if (!wnd.mouse.LeftIsPressed())
@@ -125,20 +146,20 @@ void Game::HandleInput()
 
 	if (wnd.kbd.KeyIsPressed(VK_UP))
 	{
-		angle += 0.005;
+		//angle += 0.005;
 	}
 	if (wnd.kbd.KeyIsPressed(VK_DOWN))
 	{
-		angle -= 0.005;
+		//angle -= 0.005;
 	}
 
 	if (wnd.kbd.KeyIsPressed(VK_LEFT))
 	{
-		start_len -= 1;
+		start_len *=1.01;
 	}
 	if (wnd.kbd.KeyIsPressed(VK_RIGHT))
 	{
-		start_len += 1;
+		start_len *= 0.99;
 	}
 }
 
@@ -149,16 +170,6 @@ void Game::UpdateModel()
 
 void Game::ComposeFrame()
 {
-	for (auto& branch : tree)
-	{
-		branch.show(gfx);
-		branch.jitter();
-	}
-	for (auto& leave : leaves)
-	{
-		gfx.draw_elipse_s(leave, 8, 8, Colors::Purple);
-		leave.y += rnd.next_float(1, 3);
-	}
-	//branch(gfx, float2(center.x, Graphics::ScreenHeight - 10), float2(center.x, Graphics::ScreenHeight - start_len -10));
+	turtle(gfx);
 }
 
